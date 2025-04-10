@@ -1,7 +1,7 @@
 {
   "name": "react-ui",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "engines": {
     "node": ">22.0.0",
@@ -15,7 +15,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "modern-normalize": "^3.0.1",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@fontsource/roboto": "^5.2.5",
+    "@mui/icons-material": "^7.0.1",
+    "@mui/material": "^7.0.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

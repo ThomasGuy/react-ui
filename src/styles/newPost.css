@@ -1,0 +1,35 @@
+.imageupload {
+  display: flex;
+  flex-direction: column;
+  width: 60%;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  background-color: #fff;
+  border-top: 1px solid lightgray;
+}
+
+.post_title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+
+  img {
+    object-fit: contain;
+    width: 50px;
+    padding: 10px;
+  }
+}
+
+.post_body {
+  display: flex;
+  flex-direction: column;
+  margin: 10px 30px;
+
+  input {
+    height: 10px;
+  }
+}

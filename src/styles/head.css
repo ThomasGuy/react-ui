@@ -1,0 +1,41 @@
+.head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-height: 100px;
+  padding: 20px;
+  background-color: rgb(255, 255, 255);
+  border-bottom: 1px solid lightgray;
+
+  img {
+    object-fit: contain;
+    width: 100px;
+    padding: 10px;
+  }
+}
+
+.login_title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+
+  img {
+    object-fit: contain;
+    width: 50px;
+    padding: 10px;
+  }
+}
+
+.login {
+  display: flex;
+  flex-direction: column;
+  margin: 10px 30px;
+
+  input {
+    height: 10px;
+  }
+}

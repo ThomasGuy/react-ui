@@ -1,30 +1,83 @@
-import { useState } from 'react'
-import reactLogo from '../assets/react.svg'
-import viteLogo from '/vite.svg'
-import '../styles/App.css'
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+import { useState, useEffect } from 'react'
+
+import { IPost } from './props'
+import Post from './Post'
+import Head from './Head'
+import '../styles/app.css'
+
+const BASE_URL = 'http://localhost:8000/'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [posts, setPosts] = useState<IPost[]>([])
+  const [username, setUsername] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
+  const [authToken, setAuthToken] = useState<string | null>(null)
+  const [authTokenType, setAuthTokenType] = useState<string | null>(null)
+
+  useEffect(() => {
+    setAuthToken(window.localStorage.getItem('authToken'))
+    setAuthTokenType(window.localStorage.getItem('authTokenType'))
+    setUsername(window.localStorage.getItem('username'))
+    setUserId(window.localStorage.getItem('userId'))
+  }, [])
+
+  useEffect(() => {
+    authToken
+      ? window.localStorage.setItem('authToken', authToken)
+      : window.localStorage.removeItem('authToken')
+    authTokenType
+      ? window.localStorage.setItem('authTokenType', authTokenType)
+      : window.localStorage.removeItem('authTokenType')
+    username
+      ? window.localStorage.setItem('username', username)
+      : window.localStorage.removeItem('username')
+    userId
+      ? window.localStorage.setItem('userId', userId)
+      : window.localStorage.removeItem('userId')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authToken, authTokenType, userId])
+
+  useEffect(() => {
+    fetch(BASE_URL + 'post/all')
+      .then(response => {
+        if (response.ok) {
+          return response.json()
+        }
+        throw response
+      })
+      .then(data => {
+        setPosts(data)
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  }, [])
 
   return (
-    <>
-      <div>
-        <a href='https://vite.dev' target='_blank'>
-          <img src={viteLogo} className='logo' alt='Vite logo' />
-        </a>
-        <a href='https://react.dev' target='_blank'>
-          <img src={reactLogo} className='logo react' alt='React logo' />
-        </a>
+    <div className='app'>
+      <Head
+        authToken={authToken}
+        setAuthToken={setAuthToken}
+        authTokenType={authTokenType}
+        setAuthTokenType={setAuthTokenType}
+        username={username}
+        setUsername={setUsername}
+        userId={userId}
+        setUserId={setUserId}
+      />
+      <div className='app_posts'>
+        {posts.map((post, idx) => (
+          <Post
+            key={idx}
+            post={post}
+            authToken={authToken}
+            authTokenType={authTokenType}
+            username={username}
+          />
+        ))}
       </div>
-      <h1>Vite + React</h1>
-      <div className='card'>
-        <button onClick={() => setCount(count => count + 1)}>count is {count}</button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className='read-the-docs'>Click on the Vite and React logos to learn more</p>
-    </>
+    </div>
   )
 }
 
