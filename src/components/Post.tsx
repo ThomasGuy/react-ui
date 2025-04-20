@@ -3,21 +3,12 @@ import { Avatar, Button } from '@mui/material'
 import { DeleteForeverOutlined, Send } from '@mui/icons-material'
 
 import '../styles/post.css'
-import { IPost, IComment } from './props'
+import { IPost, IComment, IAuth } from './props'
 
 const BASE_URL = 'http://localhost:8000/'
 
-const Post = ({
-  post,
-  authToken,
-  authTokenType,
-  username,
-}: {
-  post: IPost
-  authToken: string | null
-  authTokenType: string | null
-  username: string | null
-}) => {
+const Post = ({ post, auth }: { post: IPost; auth: IAuth }) => {
+  const { authToken, authTokenType, username } = auth
   const [comments, setComments] = useState<IComment[]>([])
   const [imageUrl, setImageUrl] = useState<string | undefined>(undefined)
   const [newComment, setNewComment] = useState<string | ''>('')
