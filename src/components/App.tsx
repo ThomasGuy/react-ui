@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 import { useState, useEffect } from 'react'
 
-import { IAuth, IPost } from './props'
+import { IAuth, IAuthState, IPost } from './props'
 import Post from './Post'
 import Head from './Head'
 import '../styles/app.css'
@@ -54,6 +54,17 @@ function App() {
       })
   }, [])
 
+  const props: IAuthState = {
+    authToken,
+    setAuthToken,
+    authTokenType,
+    setAuthTokenType,
+    username,
+    setUsername,
+    userId,
+    setUserId,
+  }
+
   const auth: IAuth = {
     authToken,
     authTokenType,
@@ -62,16 +73,7 @@ function App() {
 
   return (
     <div className='app'>
-      <Head
-        authToken={authToken}
-        setAuthToken={setAuthToken}
-        authTokenType={authTokenType}
-        setAuthTokenType={setAuthTokenType}
-        username={username}
-        setUsername={setUsername}
-        userId={userId}
-        setUserId={setUserId}
-      />
+      <Head {...props} />
       <div className='app_posts'>
         {posts.map((post, idx) => (
           <Post key={idx} post={post} auth={auth} />
