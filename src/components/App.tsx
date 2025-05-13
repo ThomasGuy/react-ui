@@ -40,16 +40,16 @@ function App() {
 
   useEffect(() => {
     fetch(BASE_URL + 'post/all')
-      .then(response => {
+      .then((response) => {
         if (response.ok) {
           return response.json()
         }
         throw response
       })
-      .then(data => {
+      .then((data) => {
         setPosts(data)
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err)
       })
   }, [])
@@ -72,9 +72,9 @@ function App() {
   }
 
   return (
-    <div className='app'>
+    <div className="app">
       <Head {...props} />
-      <div className='app_posts'>
+      <div className="app_posts">
         {posts.map((post, idx) => (
           <Post key={idx} post={post} auth={auth} />
         ))}

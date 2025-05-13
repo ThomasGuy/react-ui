@@ -32,15 +32,15 @@ const NewPost = ({ authToken, authTokenType, userId }: IAuth) => {
     }
 
     fetch(BASE_URL + 'post/image', requestOptions)
-      .then(response => {
+      .then((response) => {
         if (response.ok) {
           return response.json()
         }
       })
-      .then(data => {
+      .then((data) => {
         createPost(data.filename)
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err)
       })
       .finally(() => {
@@ -68,7 +68,7 @@ const NewPost = ({ authToken, authTokenType, userId }: IAuth) => {
     }
 
     fetch(BASE_URL + 'post', requestOptions)
-      .then(response => {
+      .then((response) => {
         if (response.ok) {
           return response.json()
         }
@@ -78,31 +78,31 @@ const NewPost = ({ authToken, authTokenType, userId }: IAuth) => {
         window.location.reload()
         window.scrollTo(0, 0)
       })
-      .catch(error => console.log('Error', error))
+      .catch((error) => console.log('Error', error))
   }
 
   return (
     <Box sx={style}>
-      <div className='post_title'>
+      <div className="post_title">
         <img
-          src='https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/250px-Instagram_logo_2022.svg.png'
-          alt='instagram'
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/250px-Instagram_logo_2022.svg.png"
+          alt="instagram"
         />
-        <Typography id='modal-modal-title' variant='h6' component='h2'>
+        <Typography id="modal-modal-title" variant="h6" component="h2">
           <center>New Post</center>
         </Typography>
       </div>
-      <div className='post_body'>
+      <div className="post_body">
         <TextField
-          type='text'
-          placeholder='Enter a caption'
-          onChange={evt => setCaption(evt.target.value)}
+          type="text"
+          placeholder="Enter a caption"
+          onChange={(evt) => setCaption(evt.target.value)}
           value={caption}
         />
         <br />
-        <TextField type='file' id='fileInput' onChange={handleFileData} />
+        <TextField type="file" id="fileInput" onChange={handleFileData} />
         <br />
-        <Button className='imageupload_button' onClick={handleUpload}>
+        <Button className="imageupload_button" onClick={handleUpload}>
           UPLOAD
         </Button>
       </div>

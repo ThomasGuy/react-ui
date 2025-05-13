@@ -32,13 +32,13 @@ const Post = ({ post, auth }: { post: IPost; auth: IAuth }) => {
       }),
     }
     fetch(BASE_URL + 'post/delete/' + post.id, requestOptions)
-      .then(response => {
+      .then((response) => {
         if (response.ok) {
           window.location.reload()
         }
         throw response
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err)
       })
   }
@@ -61,7 +61,7 @@ const Post = ({ post, auth }: { post: IPost; auth: IAuth }) => {
     }
 
     fetch(BASE_URL + 'comment', requestOptions)
-      .then(response => {
+      .then((response) => {
         if (response.ok) {
           return response.json()
         }
@@ -70,7 +70,7 @@ const Post = ({ post, auth }: { post: IPost; auth: IAuth }) => {
       .then(() => {
         fetchComments()
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err)
       })
       .finally(() => {
@@ -80,34 +80,34 @@ const Post = ({ post, auth }: { post: IPost; auth: IAuth }) => {
 
   const fetchComments = () => {
     fetch(BASE_URL + 'comment/all/' + post.id)
-      .then(response => {
+      .then((response) => {
         if (response.ok) {
           return response.json()
         }
         throw response
       })
-      .then(data => {
+      .then((data) => {
         setComments(data)
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err)
       })
   }
 
   return (
-    <div className='post'>
-      <div className='post_header'>
-        <Avatar alt='Sport' src='' />
-        <h3 className='post_headerInfo'>{post.user.username}</h3>
-        <div className='post_delete'>
+    <div className="post">
+      <div className="post_header">
+        <Avatar alt="Sport" src="" />
+        <h3 className="post_headerInfo">{post.user.username}</h3>
+        <div className="post_delete">
           <Button onClick={handleDelete}>
-            <DeleteForeverOutlined htmlColor='lightblue' />
+            <DeleteForeverOutlined htmlColor="lightblue" />
           </Button>
         </div>
       </div>
-      <img className='post_image' src={imageUrl} alt={post.caption} />
-      <h4 className='post_caption'>{post.caption}</h4>
-      <div className='post_comments'>
+      <img className="post_image" src={imageUrl} alt={post.caption} />
+      <h4 className="post_caption">{post.caption}</h4>
+      <div className="post_comments">
         {comments.map((comment, idx) => (
           <p key={idx}>
             <strong>{comment.username}: </strong>
@@ -116,18 +116,18 @@ const Post = ({ post, auth }: { post: IPost; auth: IAuth }) => {
         ))}
       </div>
       {authToken && (
-        <form className='post_commentbox'>
+        <form className="post_commentbox">
           <input
-            className='post_input'
-            id='newCom'
-            type='text'
-            placeholder='Add a comment'
+            className="post_input"
+            id="newCom"
+            type="text"
+            placeholder="Add a comment"
             value={newComment}
-            onChange={evt => setNewComment(evt.target.value)}
+            onChange={(evt) => setNewComment(evt.target.value)}
           />
           <button
-            className='post_button'
-            type='submit'
+            className="post_button"
+            type="submit"
             disabled={!newComment}
             onClick={postComment}
           >

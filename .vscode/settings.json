@@ -5,5 +5,6 @@
     "titleBar.activeForeground": "#06489e",
     "titleBar.inactiveForeground": "#e6e5e5af"
   },
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "prettier.semi": false
 }

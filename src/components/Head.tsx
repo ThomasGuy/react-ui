@@ -35,19 +35,19 @@ const Head = ({
     }
 
     fetch(BASE_URL + 'login', requestOptions)
-      .then(res => {
+      .then((res) => {
         if (res.ok) {
           return res.json()
         }
         throw res
       })
-      .then(data => {
+      .then((data) => {
         setAuthToken(data.access_token)
         setAuthTokenType(data.token_type)
         setUserId(data.user_id)
         setUsername(data.username)
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err)
       })
     setLogin(false)
@@ -76,7 +76,7 @@ const Head = ({
     }
 
     fetch(BASE_URL + 'user', requestOptions)
-      .then(response => {
+      .then((response) => {
         if (response.ok) {
           return response.json()
         }
@@ -86,7 +86,7 @@ const Head = ({
         // @ts-expect-error event is null
         handleLogin()
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err)
         alert(err)
       })
@@ -94,40 +94,36 @@ const Head = ({
   }
 
   return (
-    <div className='head'>
-      <Modal
-        open={login}
-        onClose={() => setLogin(false)}
-        aria-labelledby='modal-modal-title'
-      >
+    <div className="head">
+      <Modal open={login} onClose={() => setLogin(false)} aria-labelledby="modal-modal-title">
         <Box sx={style}>
-          <div className='login_title'>
+          <div className="login_title">
             <img
-              src='https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/250px-Instagram_logo_2022.svg.png'
-              alt='instagram'
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/250px-Instagram_logo_2022.svg.png"
+              alt="instagram"
             />
-            <Typography id='modal-modal-title' variant='h6' component='h2'>
+            <Typography id="modal-modal-title" variant="h6" component="h2">
               <center>Login</center>
             </Typography>
           </div>
-          <form className='login'>
+          <form className="login">
             <TextField
-              className='button'
-              placeholder='username'
-              type='text'
+              className="button"
+              placeholder="username"
+              type="text"
               value={username}
-              onChange={evt => setUsername(evt.target.value)}
+              onChange={(evt) => setUsername(evt.target.value)}
             />
             <br />
             <TextField
-              className='button'
-              placeholder='password'
-              type='password'
+              className="button"
+              placeholder="password"
+              type="password"
               value={password}
-              onChange={evt => setPassword(evt.target.value)}
+              onChange={(evt) => setPassword(evt.target.value)}
             />
             <br />
-            <Button type='submit' onClick={handleLogin}>
+            <Button type="submit" onClick={handleLogin}>
               Login
             </Button>
           </form>
@@ -137,77 +133,73 @@ const Head = ({
       <Modal
         open={openSignUp}
         onClose={() => setOpenSignUp(false)}
-        aria-labelledby='modal-modal-title'
+        aria-labelledby="modal-modal-title"
       >
         <Box sx={style}>
-          <div className='login_title'>
+          <div className="login_title">
             <img
-              src='https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/250px-Instagram_logo_2022.svg.png'
-              alt='instagram'
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/250px-Instagram_logo_2022.svg.png"
+              alt="instagram"
             />
-            <Typography id='modal-modal-title' variant='h6' component='h2'>
+            <Typography id="modal-modal-title" variant="h6" component="h2">
               <center>New user</center>
             </Typography>
           </div>
-          <form className='login'>
+          <form className="login">
             <TextField
-              className='button'
-              placeholder='username'
-              type='text'
+              className="button"
+              placeholder="username"
+              type="text"
               value={username}
-              onChange={evt => setUsername(evt.target.value)}
+              onChange={(evt) => setUsername(evt.target.value)}
             />
             <br />
             <TextField
-              className='button'
-              placeholder='email'
-              type='text'
+              className="button"
+              placeholder="email"
+              type="text"
               value={email}
-              onChange={evt => setEmail(evt.target.value)}
+              onChange={(evt) => setEmail(evt.target.value)}
             />
             <br />
             <TextField
-              className='button'
-              placeholder='password'
-              type='password'
+              className="button"
+              placeholder="password"
+              type="password"
               value={password}
-              onChange={evt => setPassword(evt.target.value)}
+              onChange={(evt) => setPassword(evt.target.value)}
             />
             <br />
-            <Button type='submit' onClick={handleSignUp}>
+            <Button type="submit" onClick={handleSignUp}>
               submit
             </Button>
           </form>
         </Box>
       </Modal>
 
-      <Modal
-        open={newPost}
-        onClose={() => setNewPost(false)}
-        aria-labelledby='modal-modal-title'
-      >
+      <Modal open={newPost} onClose={() => setNewPost(false)} aria-labelledby="modal-modal-title">
         <NewPost authToken={authToken} authTokenType={authTokenType} userId={userId} />
       </Modal>
 
       <img
-        src='https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/250px-Instagram_logo_2022.svg.png'
-        alt='instagram'
+        src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/250px-Instagram_logo_2022.svg.png"
+        alt="instagram"
       />
       {authToken ? (
         <div>
-          <Button variant='outlined' onClick={() => setNewPost(true)}>
+          <Button variant="outlined" onClick={() => setNewPost(true)}>
             New Post
           </Button>
-          <Button variant='outlined' onClick={handleLogout}>
+          <Button variant="outlined" onClick={handleLogout}>
             Log Out
           </Button>
         </div>
       ) : (
         <div>
-          <Button variant='outlined' onClick={() => setLogin(true)}>
+          <Button variant="outlined" onClick={() => setLogin(true)}>
             LOGIN
           </Button>
-          <Button variant='outlined' onClick={() => setOpenSignUp(true)}>
+          <Button variant="outlined" onClick={() => setOpenSignUp(true)}>
             SIGNUP
           </Button>
         </div>
