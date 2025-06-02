@@ -1,12 +1,12 @@
-import React, { useState } from 'react'
-import { Box, Button, Modal, TextField, Typography } from '@mui/material'
+import React, { useState } from "react";
+import { Box, Button, Modal, TextField, Typography } from "@mui/material";
 
-import '../styles/head.css'
-import { IAuthState } from './props'
-import { style } from './modals/modal_style'
-import NewPost from './modals/NewPost'
+import "../styles/head.css";
+import { IAuthState } from "./props";
+import { style } from "./modals/modal_style";
+import NewPost from "./modals/NewPost";
 
-const BASE_URL = 'http://localhost:8000/'
+const BASE_URL = "http://127.0.0.1:8000/";
 
 const Head = ({
   authToken,
@@ -18,84 +18,94 @@ const Head = ({
   userId,
   setUserId,
 }: IAuthState) => {
-  const [login, setLogin] = useState(false)
-  const [openSignUp, setOpenSignUp] = useState(false)
-  const [newPost, setNewPost] = useState(false)
-  const [email, setEmail] = useState<string | null>(null)
-  const [password, setPassword] = useState<string | null>(null)
+  const [login, setLogin] = useState(false);
+  const [openSignUp, setOpenSignUp] = useState(false);
+  const [newPost, setNewPost] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
+  const [password, setPassword] = useState<string | null>(null);
 
-  const handleLogin = (evt: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
-    evt?.preventDefault()
-    const formData = new FormData()
-    formData.append('username', username as string)
-    formData.append('password', password as string)
+  const handleLogin = (
+    evt: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ): void => {
+    evt?.preventDefault();
+    const formData = new FormData();
+    formData.append("username", username as string);
+    formData.append("password", password as string);
     const requestOptions = {
-      method: 'Post',
+      method: "Post",
       body: formData,
-    }
+    };
 
-    fetch(BASE_URL + 'login', requestOptions)
+    fetch(BASE_URL + "login", requestOptions)
       .then((res) => {
         if (res.ok) {
-          return res.json()
+          return res.json();
         }
-        throw res
+        throw res;
       })
       .then((data) => {
-        setAuthToken(data.access_token)
-        setAuthTokenType(data.token_type)
-        setUserId(data.user_id)
-        setUsername(data.username)
+        setAuthToken(data.access_token);
+        setAuthTokenType(data.token_type);
+        setUserId(data.user_id);
+        setUsername(data.username);
       })
       .catch((err) => {
-        console.log(err)
-      })
-    setLogin(false)
-  }
+        console.log(err);
+      });
+    setLogin(false);
+  };
 
-  const handleLogout = (evt: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
-    evt.preventDefault()
-    setAuthToken(null)
-    setAuthTokenType(null)
-    setUserId(null)
-    setUsername(null)
-    setPassword(null)
-  }
+  const handleLogout = (
+    evt: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ): void => {
+    evt.preventDefault();
+    setAuthToken(null);
+    setAuthTokenType(null);
+    setUserId(null);
+    setUsername(null);
+    setPassword(null);
+  };
 
-  function handleSignUp(evt: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
-    evt?.preventDefault()
+  function handleSignUp(
+    evt: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ): void {
+    evt?.preventDefault();
     const json_string = JSON.stringify({
       username: username,
       email: email,
       password: password,
-    })
+    });
     const requestOptions = {
-      method: 'Post',
-      headers: { 'Content-Type': 'application/json' },
+      method: "Post",
+      headers: { "Content-Type": "application/json" },
       body: json_string,
-    }
+    };
 
-    fetch(BASE_URL + 'user', requestOptions)
+    fetch(BASE_URL + "user", requestOptions)
       .then((response) => {
         if (response.ok) {
-          return response.json()
+          return response.json();
         }
-        throw response
+        throw response;
       })
       .then(() => {
         // @ts-expect-error event is null
-        handleLogin()
+        handleLogin();
       })
       .catch((err) => {
-        console.log(err)
-        alert(err)
-      })
-    setOpenSignUp(false)
+        console.log(err);
+        alert(err);
+      });
+    setOpenSignUp(false);
   }
 
   return (
     <div className="head">
-      <Modal open={login} onClose={() => setLogin(false)} aria-labelledby="modal-modal-title">
+      <Modal
+        open={login}
+        onClose={() => setLogin(false)}
+        aria-labelledby="modal-modal-title"
+      >
         <Box sx={style}>
           <div className="login_title">
             <img
@@ -177,8 +187,16 @@ const Head = ({
         </Box>
       </Modal>
 
-      <Modal open={newPost} onClose={() => setNewPost(false)} aria-labelledby="modal-modal-title">
-        <NewPost authToken={authToken} authTokenType={authTokenType} userId={userId} />
+      <Modal
+        open={newPost}
+        onClose={() => setNewPost(false)}
+        aria-labelledby="modal-modal-title"
+      >
+        <NewPost
+          authToken={authToken}
+          authTokenType={authTokenType}
+          userId={userId}
+        />
       </Modal>
 
       <img
@@ -205,7 +223,7 @@ const Head = ({
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Head
+export default Head;

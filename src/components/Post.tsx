@@ -1,98 +1,102 @@
-import { useState, useEffect } from 'react'
-import { Avatar, Button } from '@mui/material'
-import { DeleteForeverOutlined, Send } from '@mui/icons-material'
+import { useState, useEffect } from "react";
+import { Avatar, Button } from "@mui/material";
+import { DeleteForeverOutlined, Send } from "@mui/icons-material";
 
-import '../styles/post.css'
-import { IPost, IComment, IAuth } from './props'
+import "../styles/post.css";
+import { IPost, IComment, IAuth } from "./props";
 
-const BASE_URL = 'http://localhost:8000/'
+const BASE_URL = "http://127.0.0.1:8000/";
 
 const Post = ({ post, auth }: { post: IPost; auth: IAuth }) => {
-  const { authToken, authTokenType, username } = auth
-  const [comments, setComments] = useState<IComment[]>([])
-  const [imageUrl, setImageUrl] = useState<string | undefined>(undefined)
-  const [newComment, setNewComment] = useState<string | ''>('')
+  const { authToken, authTokenType, username } = auth;
+  const [comments, setComments] = useState<IComment[]>([]);
+  const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
+  const [newComment, setNewComment] = useState<string | "">("");
 
   useEffect(() => {
-    setComments(post.comments)
-    if (post.image_url_type == 'absolute') {
-      setImageUrl(post.image_url)
+    setComments(post.comments);
+    if (post.image_url_type == "absolute") {
+      setImageUrl(post.image_url);
     } else {
-      setImageUrl(BASE_URL + post.image_url)
+      setImageUrl(BASE_URL + post.image_url);
     }
-  }, [post])
+  }, [post]);
 
-  const handleDelete = (evt: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
-    evt?.preventDefault()
+  const handleDelete = (
+    evt: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ): void => {
+    evt?.preventDefault();
 
     const requestOptions = {
-      method: 'DELETE',
+      method: "DELETE",
       headers: new Headers({
-        Authorization: authTokenType + ' ' + authToken,
+        Authorization: authTokenType + " " + authToken,
       }),
-    }
-    fetch(BASE_URL + 'post/delete/' + post.id, requestOptions)
+    };
+    fetch(BASE_URL + "post/delete/" + post.id, requestOptions)
       .then((response) => {
         if (response.ok) {
-          window.location.reload()
+          window.location.reload();
         }
-        throw response
+        throw response;
       })
       .catch((err) => {
-        console.log(err)
-      })
-  }
+        console.log(err);
+      });
+  };
 
-  const postComment = (evt: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
-    evt?.preventDefault()
+  const postComment = (
+    evt: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ): void => {
+    evt?.preventDefault();
     const json_string = JSON.stringify({
       username: username,
       text: newComment,
       post_id: post.id,
-    })
+    });
 
     const requestOptions = {
-      method: 'POST',
+      method: "POST",
       headers: new Headers({
-        Authorization: authTokenType + ' ' + authToken,
-        'Content-Type': 'application/json',
+        Authorization: authTokenType + " " + authToken,
+        "Content-Type": "application/json",
       }),
       body: json_string,
-    }
+    };
 
-    fetch(BASE_URL + 'comment', requestOptions)
+    fetch(BASE_URL + "comment", requestOptions)
       .then((response) => {
         if (response.ok) {
-          return response.json()
+          return response.json();
         }
-        throw response
+        throw response;
       })
       .then(() => {
-        fetchComments()
+        fetchComments();
       })
       .catch((err) => {
-        console.log(err)
+        console.log(err);
       })
       .finally(() => {
-        setNewComment('')
-      })
-  }
+        setNewComment("");
+      });
+  };
 
   const fetchComments = () => {
-    fetch(BASE_URL + 'comment/all/' + post.id)
+    fetch(BASE_URL + "comment/all/" + post.id)
       .then((response) => {
         if (response.ok) {
-          return response.json()
+          return response.json();
         }
-        throw response
+        throw response;
       })
       .then((data) => {
-        setComments(data)
+        setComments(data);
       })
       .catch((err) => {
-        console.log(err)
-      })
-  }
+        console.log(err);
+      });
+  };
 
   return (
     <div className="post">
@@ -136,7 +140,7 @@ const Post = ({ post, auth }: { post: IPost; auth: IAuth }) => {
         </form>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Post
+export default Post;
