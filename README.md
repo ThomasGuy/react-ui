@@ -1,3 +1,3 @@
 # React + TypeScript + Vite
 
-This template works with fastapi app which represents an Instagram clone.
+This template works with fastapi this tutprial app represents an Instagram clone.
