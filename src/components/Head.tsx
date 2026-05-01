@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Box, Button, Modal, TextField, Typography } from "@mui/material";
 
 import "../styles/head.css";
-import { IAuthState } from "./props";
+import { IAuthState, Uuid } from "./props";
 import { style } from "./modals/modal_style";
 import NewPost from "./modals/NewPost";
 
@@ -15,44 +15,49 @@ const Head = ({
   setAuthTokenType,
   username,
   setUsername,
-  userId,
   setUserId,
+  setPosts,
 }: IAuthState) => {
-  const [login, setLogin] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
   const [openSignUp, setOpenSignUp] = useState(false);
-  const [newPost, setNewPost] = useState(false);
+  const [newPostOpen, setNewPostOpen] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
   const [password, setPassword] = useState<string | null>(null);
 
-  const handleLogin = (
-    evt: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ): void => {
-    evt?.preventDefault();
-    const formData = new FormData();
-    formData.append("username", username as string);
-    formData.append("password", password as string);
-    const requestOptions = {
-      method: "Post",
-      body: formData,
-    };
+  const handleLogin = async (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => {
+    e?.preventDefault();
+    try {
+      const loginData = {
+        username: username as string,
+        password: password as string,
+      };
+      const requestOptions = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", // MUST be present
+        },
+        body: JSON.stringify(loginData),
+      };
+      const response = await fetch(BASE_URL + "user/login", requestOptions);
 
-    fetch(BASE_URL + "login", requestOptions)
-      .then((res) => {
-        if (res.ok) {
-          return res.json();
-        }
-        throw res;
-      })
-      .then((data) => {
-        setAuthToken(data.access_token);
-        setAuthTokenType(data.token_type);
-        setUserId(data.user_id);
-        setUsername(data.username);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-    setLogin(false);
+      if (response.status === 401 || response.status === 404) {
+        alert("Invalid email or password. Please try again.");
+        return;
+      }
+
+      if (response.ok) {
+        const data = await response.json();
+        setAuthToken(data.authToken);
+        setAuthTokenType(data.authTokenType);
+        setUserId(data.user.id as Uuid);
+        setUsername(data.user.username);
+        setLoginOpen(false);
+      }
+    } catch (error) {
+      console.error("Fetch error: ", error);
+    }
   };
 
   const handleLogout = (
@@ -64,46 +69,44 @@ const Head = ({
     setUserId(null);
     setUsername(null);
     setPassword(null);
+    window.localStorage.clear();
+    setLoginOpen(true);
   };
 
-  function handleSignUp(
-    evt: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ): void {
-    evt?.preventDefault();
-    const json_string = JSON.stringify({
-      username: username,
-      email: email,
-      password: password,
-    });
-    const requestOptions = {
-      method: "Post",
-      headers: { "Content-Type": "application/json" },
-      body: json_string,
-    };
+  const handleSignUp = async (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => {
+    e?.preventDefault();
 
-    fetch(BASE_URL + "user", requestOptions)
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw response;
-      })
-      .then(() => {
-        // @ts-expect-error event is null
-        handleLogin();
-      })
-      .catch((err) => {
-        console.log(err);
-        alert(err);
+    try {
+      const json_string = JSON.stringify({
+        username: username,
+        email: email,
+        password: password,
       });
-    setOpenSignUp(false);
-  }
+      const requestOptions = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: json_string,
+      };
+
+      const response = await fetch(BASE_URL + "user/signup", requestOptions);
+      if (!response.ok) {
+        throw new Error("register user failed");
+      }
+
+      setOpenSignUp(false);
+    } catch (error) {
+      console.error("Fetch error: ", error);
+      alert(error);
+    }
+  };
 
   return (
     <div className="head">
       <Modal
-        open={login}
-        onClose={() => setLogin(false)}
+        open={loginOpen}
+        onClose={() => setLoginOpen(false)}
         aria-labelledby="modal-modal-title"
       >
         <Box sx={style}>
@@ -188,14 +191,15 @@ const Head = ({
       </Modal>
 
       <Modal
-        open={newPost}
-        onClose={() => setNewPost(false)}
+        open={newPostOpen}
+        onClose={() => setNewPostOpen(false)}
         aria-labelledby="modal-modal-title"
       >
         <NewPost
           authToken={authToken}
           authTokenType={authTokenType}
-          userId={userId}
+          setPosts={setPosts}
+          onSuccess={() => setNewPostOpen(false)}
         />
       </Modal>
 
@@ -205,7 +209,7 @@ const Head = ({
       />
       {authToken ? (
         <div>
-          <Button variant="outlined" onClick={() => setNewPost(true)}>
+          <Button variant="outlined" onClick={() => setNewPostOpen(true)}>
             New Post
           </Button>
           <Button variant="outlined" onClick={handleLogout}>
@@ -214,7 +218,7 @@ const Head = ({
         </div>
       ) : (
         <div>
-          <Button variant="outlined" onClick={() => setLogin(true)}>
+          <Button variant="outlined" onClick={() => setLoginOpen(true)}>
             LOGIN
           </Button>
           <Button variant="outlined" onClick={() => setOpenSignUp(true)}>

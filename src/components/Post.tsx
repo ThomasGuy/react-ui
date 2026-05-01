@@ -1,101 +1,76 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Avatar, Button } from "@mui/material";
 import { DeleteForeverOutlined, Send } from "@mui/icons-material";
 
 import "../styles/post.css";
-import { IPost, IComment, IAuth } from "./props";
+import { IPost, INewComment } from "./props";
 
 const BASE_URL = "http://127.0.0.1:8000/";
 
-const Post = ({ post, auth }: { post: IPost; auth: IAuth }) => {
-  const { authToken, authTokenType, username } = auth;
-  const [comments, setComments] = useState<IComment[]>([]);
-  const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
+const Post = ({ post, auth }: { post: IPost; auth: INewComment }) => {
+  const { authToken, authTokenType, setPosts } = auth;
   const [newComment, setNewComment] = useState<string | "">("");
 
-  useEffect(() => {
-    setComments(post.comments);
-    if (post.image_url_type == "absolute") {
-      setImageUrl(post.image_url);
-    } else {
-      setImageUrl(BASE_URL + post.image_url);
+  const handleDelete = async (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch(`${BASE_URL}post/delete/${post.id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${authTokenType} ${authToken}`,
+        },
+      });
+
+      if (response.ok) {
+        // 1. Instantly remove the post from the UI
+        setPosts((prevPosts) => prevPosts.filter((p) => p.id !== post.id));
+
+        // 2. Optional: Scroll to top or show a small notification
+        console.log("Post deleted successfully");
+      } else {
+        console.error("Failed to delete post on server");
+      }
+    } catch (err) {
+      console.error("Network error during delete:", err);
     }
-  }, [post]);
-
-  const handleDelete = (
-    evt: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ): void => {
-    evt?.preventDefault();
-
-    const requestOptions = {
-      method: "DELETE",
-      headers: new Headers({
-        Authorization: authTokenType + " " + authToken,
-      }),
-    };
-    fetch(BASE_URL + "post/delete/" + post.id, requestOptions)
-      .then((response) => {
-        if (response.ok) {
-          window.location.reload();
-        }
-        throw response;
-      })
-      .catch((err) => {
-        console.log(err);
-      });
   };
 
-  const postComment = (
+  const handlePostComment = async (
     evt: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ): void => {
-    evt?.preventDefault();
-    const json_string = JSON.stringify({
-      username: username,
-      text: newComment,
-      post_id: post.id,
-    });
+  ) => {
+    evt.preventDefault();
 
-    const requestOptions = {
-      method: "POST",
-      headers: new Headers({
-        Authorization: authTokenType + " " + authToken,
-        "Content-Type": "application/json",
-      }),
-      body: json_string,
-    };
-
-    fetch(BASE_URL + "comment", requestOptions)
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw response;
-      })
-      .then(() => {
-        fetchComments();
-      })
-      .catch((err) => {
-        console.log(err);
-      })
-      .finally(() => {
-        setNewComment("");
+    try {
+      const response = await fetch(`${BASE_URL}comment`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${authTokenType} ${authToken}`,
+        },
+        body: JSON.stringify({
+          post_id: post.id,
+          comment: newComment,
+        }),
       });
-  };
 
-  const fetchComments = () => {
-    fetch(BASE_URL + "comment/all/" + post.id)
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw response;
-      })
-      .then((data) => {
-        setComments(data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+      if (response.ok) {
+        const createdComment = await response.json();
+
+        setPosts((prevPosts) =>
+          prevPosts.map((p) =>
+            p.id === post.id
+              ? { ...p, comments: [...p.comments, createdComment] }
+              : p,
+          ),
+        );
+      }
+    } catch (error) {
+      console.error("Fetch error: ", error);
+    }
   };
 
   return (
@@ -109,13 +84,17 @@ const Post = ({ post, auth }: { post: IPost; auth: IAuth }) => {
           </Button>
         </div>
       </div>
-      <img className="post_image" src={imageUrl} alt={post.caption} />
+      <img
+        className="post_image"
+        src={`${BASE_URL}images/${post.image_url}`}
+        alt={post.caption ? post.caption : "nothing"}
+      />
       <h4 className="post_caption">{post.caption}</h4>
       <div className="post_comments">
-        {comments.map((comment, idx) => (
-          <p key={idx}>
-            <strong>{comment.username}: </strong>
-            {comment.text}
+        {post.comments.map((c) => (
+          <p key={c.id}>
+            <strong>{c.username}: </strong>
+            {c.comment}
           </p>
         ))}
       </div>
@@ -133,7 +112,7 @@ const Post = ({ post, auth }: { post: IPost; auth: IAuth }) => {
             className="post_button"
             type="submit"
             disabled={!newComment}
-            onClick={postComment}
+            onClick={handlePostComment}
           >
             <Send />
           </button>

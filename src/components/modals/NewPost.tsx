@@ -2,85 +2,73 @@ import React, { useState } from "react";
 import { Box, Button, TextField, Typography } from "@mui/material";
 
 import "../../styles/newPost.css";
-import { IAuth } from "../props";
+import { INewPost, IPost } from "../props";
 import { style } from "./modal_style";
 
 const BASE_URL = "http://localhost:8000/";
 
-const NewPost = ({ authToken, authTokenType, userId }: IAuth) => {
+const NewPost = ({
+  authToken,
+  authTokenType,
+  setPosts,
+  onSuccess,
+}: INewPost) => {
   const [image, setImage] = useState<File | null>(null);
   const [caption, setCaption] = useState("");
 
   const handleFileData = (evt: React.ChangeEvent<HTMLInputElement>): void => {
-    const data = evt.target.files ? evt.target.files[0] : null;
-    if (data) {
-      setImage(data);
+    const imgData = evt.target.files ? evt.target.files[0] : null;
+    if (imgData) {
+      setImage(imgData);
     }
   };
 
-  const handleUpload = (
+  const handleCreatePost = async (
     evt: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ): void => {
+  ) => {
     evt?.preventDefault();
-    const formData = new FormData();
-    if (image) formData.append("image", image);
-
-    const requestOptions = {
-      method: "POST",
-      headers: new Headers({
-        Authorization: authTokenType + " " + authToken,
-      }),
-      body: formData,
-    };
-
-    fetch(BASE_URL + "post/image", requestOptions)
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-      })
-      .then((data) => {
-        createPost(data.filename);
-      })
-      .catch((err) => {
-        console.log(err);
-      })
-      .finally(() => {
-        setCaption("");
-        setImage(null);
-        const input = document.getElementById("fileInput") as HTMLInputElement;
-        if (input.value) input.value = "";
+    try {
+      // 1. First async step: Upload the image file
+      const formData = new FormData();
+      if (image) formData.append("file", image);
+      const imgResponse = await fetch(`${BASE_URL}post/image`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${authToken}` },
+        body: formData, // your Multipart data
       });
-  };
 
-  const createPost = (imageURL: string) => {
-    const json_string = JSON.stringify({
-      image_url: imageURL,
-      image_url_type: "relative",
-      caption: caption,
-      user_id: userId,
-    });
-    const requestOptions = {
-      method: "POST",
-      headers: new Headers({
-        Authorization: authTokenType + " " + authToken,
-        "content-type": "application/json",
-      }),
-      body: json_string,
-    };
+      if (!imgResponse.ok) throw new Error("Image upload failed");
+      const { filename } = await imgResponse.json();
 
-    fetch(BASE_URL + "post", requestOptions)
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw response;
-      })
-      .then(() => {
-        window.location.reload();
-        window.scrollTo(0, 0);
-      })
-      .catch((error) => console.log("Error", error));
+      // STEP 2: Send the JSON to save the post in Postgres
+      const postResponse = await fetch(`${BASE_URL}post/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${authTokenType} ${authToken}`,
+        },
+        body: JSON.stringify({
+          image_url: filename,
+          image_url_type: "relative",
+          caption: caption,
+        }),
+      });
+
+      if (postResponse.ok) {
+        const newPostData = await postResponse.json();
+        const formattedPost: IPost = {
+          ...newPostData,
+          user: { username: newPostData.username },
+          comments: [],
+        };
+        setPosts((prev) => [formattedPost, ...prev]);
+        setImage(null);
+        setCaption("");
+        onSuccess(false);
+      }
+    } catch (err) {
+      console.error("Upload failed", err);
+    }
   };
 
   return (
@@ -104,7 +92,7 @@ const NewPost = ({ authToken, authTokenType, userId }: IAuth) => {
         <br />
         <TextField type="file" id="fileInput" onChange={handleFileData} />
         <br />
-        <Button className="imageupload_button" onClick={handleUpload}>
+        <Button className="imageupload_button" onClick={handleCreatePost}>
           UPLOAD
         </Button>
       </div>

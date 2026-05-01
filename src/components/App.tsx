@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 import { useState, useEffect } from "react";
 
-import { IAuth, IAuthState, IPost } from "./props";
+import { IAuthState, INewComment, IPost, Uuid } from "./props";
 import Post from "./Post";
 import Head from "./Head";
 import "../styles/app.css";
@@ -11,7 +11,7 @@ const BASE_URL = "http://127.0.0.1:8000/";
 function App() {
   const [posts, setPosts] = useState<IPost[]>([]);
   const [username, setUsername] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<Uuid | null>(null);
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [authTokenType, setAuthTokenType] = useState<string | null>(null);
 
@@ -19,7 +19,9 @@ function App() {
     setAuthToken(window.localStorage.getItem("authToken"));
     setAuthTokenType(window.localStorage.getItem("authTokenType"));
     setUsername(window.localStorage.getItem("username"));
-    setUserId(window.localStorage.getItem("userId"));
+
+    const storedUserId = window.localStorage.getItem("userId");
+    setUserId(storedUserId as Uuid | null);
   }, []);
 
   useEffect(() => {
@@ -35,11 +37,16 @@ function App() {
     userId
       ? window.localStorage.setItem("userId", userId)
       : window.localStorage.removeItem("userId");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authToken, authTokenType, userId]);
+  }, [authToken, authTokenType, userId, username]);
 
   useEffect(() => {
-    fetch(BASE_URL + "post/all")
+    const requestOptions = {
+      method: "Get",
+      headers: {
+        "Content-Type": "application/json", // MUST be present
+      },
+    };
+    fetch(BASE_URL + "post/all", requestOptions)
       .then((response) => {
         if (response.ok) {
           return response.json();
@@ -63,20 +70,22 @@ function App() {
     setUsername,
     userId,
     setUserId,
+    posts,
+    setPosts,
   };
 
-  const auth: IAuth = {
+  const auth: INewComment = {
     authToken,
     authTokenType,
-    username,
+    setPosts,
   };
 
   return (
     <div className="app">
       <Head {...props} />
       <div className="app_posts">
-        {posts.map((post, idx) => (
-          <Post key={idx} post={post} auth={auth} />
+        {posts.map((post) => (
+          <Post key={post.id} post={post} auth={auth} />
         ))}
       </div>
     </div>
