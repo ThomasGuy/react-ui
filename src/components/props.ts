@@ -1,6 +1,16 @@
-import React from "react";
+// import React from "react";
+import { Dispatch, SetStateAction } from "react";
+
+export type ISetPosts = Dispatch<SetStateAction<IPost[]>>;
 
 export type Uuid = `${string}-${string}-${string}-${string}-${string}`;
+
+export interface ISuccess {
+  onSuccess: () => void;
+}
+export interface HeadProps {
+  setPosts: ISetPosts;
+}
 
 export interface IComment {
   id: Uuid;
@@ -20,35 +30,43 @@ export interface IPost {
   comments: IComment[];
 }
 
-export interface IAuth {
-  authToken: string | null;
-  authTokenType: string | null;
-  username?: string | null;
-  userId?: Uuid | null;
-}
-
 export interface INewPost {
-  authToken: string | null;
-  authTokenType: string | null;
-  setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
-  onSuccess: (value: React.SetStateAction<boolean>) => void;
+  setPosts: ISetPosts;
+  onSuccess: () => void;
 }
 
-export interface INewComment {
-  authToken: string | null;
+export interface ILogin {
+  access_token: string | null;
   authTokenType: string | null;
-  setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
-}
-
-export interface IAuthState {
-  authToken: string | null;
-  setAuthToken: React.Dispatch<React.SetStateAction<string | null>>;
-  authTokenType: string | null;
-  setAuthTokenType: React.Dispatch<React.SetStateAction<string | null>>;
+  refresh_token: string | null;
   username: string | null;
-  setUsername: React.Dispatch<React.SetStateAction<string | null>>;
-  userId?: Uuid | null;
-  setUserId: React.Dispatch<React.SetStateAction<Uuid | null>>;
-  posts?: IPost[];
-  setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
+  userId: Uuid | null;
+  // setAuthToken: React.Dispatch<React.SetStateAction<string | null>>;
+  // setAuthTokenType: React.Dispatch<React.SetStateAction<string | null>>;
+  // setRefreshToken: React.Dispatch<React.SetStateAction<string | null>>;
+  // setUsername: React.Dispatch<React.SetStateAction<string | null>>;
+  // setUserId: React.Dispatch<React.SetStateAction<Uuid | null>>;
+}
+
+export interface IUser {
+  id: Uuid;
+  email: string;
+  username: string;
+  display_name: string | null;
+  bio: string | null;
+  avatar_url: string | null;
+  is_active: boolean | null;
+  is_admin: boolean | null;
+  email_verified_at: string | null;
+  last_login_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+// This matches the Json<AuthResponse> from your Rust code
+export interface IAuthResponse {
+  access_token: string;
+  refresh_token: string;
+  token_type: string; // Matches your Rust 'token_type: "Bearer".to_string()'
+  user: IUser; // The nested user object
 }

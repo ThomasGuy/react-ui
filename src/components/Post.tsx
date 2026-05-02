@@ -3,39 +3,29 @@ import { Avatar, Button } from "@mui/material";
 import { DeleteForeverOutlined, Send } from "@mui/icons-material";
 
 import "../styles/post.css";
-import { IPost, INewComment } from "./props";
+import { IPost, ISetPosts } from "./props";
+import { useAuth } from "./AuthContext";
 
 const BASE_URL = "http://127.0.0.1:8000/";
 
-const Post = ({ post, auth }: { post: IPost; auth: INewComment }) => {
-  const { authToken, authTokenType, setPosts } = auth;
+const Post = ({ post, setPosts }: { post: IPost; setPosts: ISetPosts }) => {
   const [newComment, setNewComment] = useState<string | "">("");
+  const { authToken, authFetch } = useAuth();
 
   const handleDelete = async (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   ) => {
     e.preventDefault();
 
-    try {
-      const response = await fetch(`${BASE_URL}post/delete/${post.id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `${authTokenType} ${authToken}`,
-        },
-      });
+    const response = await authFetch(`post/delete/${post.id}`, {
+      method: "DELETE",
+    });
 
-      if (response.ok) {
-        // 1. Instantly remove the post from the UI
-        setPosts((prevPosts) => prevPosts.filter((p) => p.id !== post.id));
-
-        // 2. Optional: Scroll to top or show a small notification
-        console.log("Post deleted successfully");
-      } else {
-        console.error("Failed to delete post on server");
-      }
-    } catch (err) {
-      console.error("Network error during delete:", err);
+    if (response.status == 403) {
+      alert("Unauthorized -- not your post --");
+    } else if (response.ok) {
+      // 1. Instantly remove the post from the UI
+      setPosts((prevPosts) => prevPosts.filter((p) => p.id !== post.id));
     }
   };
 
@@ -44,33 +34,26 @@ const Post = ({ post, auth }: { post: IPost; auth: INewComment }) => {
   ) => {
     evt.preventDefault();
 
-    try {
-      const response = await fetch(`${BASE_URL}comment`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `${authTokenType} ${authToken}`,
-        },
-        body: JSON.stringify({
-          post_id: post.id,
-          comment: newComment,
-        }),
-      });
+    const response = await authFetch("comment", {
+      method: "POST",
+      body: JSON.stringify({
+        post_id: post.id,
+        comment: newComment,
+      }),
+    });
 
-      if (response.ok) {
-        const createdComment = await response.json();
+    if (response.ok) {
+      const createdComment = await response.json();
 
-        setPosts((prevPosts) =>
-          prevPosts.map((p) =>
-            p.id === post.id
-              ? { ...p, comments: [...p.comments, createdComment] }
-              : p,
-          ),
-        );
-      }
-    } catch (error) {
-      console.error("Fetch error: ", error);
+      setPosts((prevPosts) =>
+        prevPosts.map((p) =>
+          p.id === post.id
+            ? { ...p, comments: [...p.comments, createdComment] }
+            : p,
+        ),
+      );
     }
+    setNewComment("");
   };
 
   return (

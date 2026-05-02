@@ -1,0 +1,146 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { createContext, useContext, useState, useEffect } from "react";
+// import { ILogin } from "./props";
+
+interface AuthContextType {
+  authToken: string | null;
+  refreshToken: string | null;
+  username: string | null;
+  userId: string | null;
+  login: (data: any) => void;
+  logout: () => void;
+  authFetch: (url: string, options?: RequestInit) => Promise<Response>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [authToken, setAuthToken] = useState(localStorage.getItem("authToken"));
+  const [authTokenType, setAuthTokenType] = useState(
+    localStorage.getItem("authTokenType"),
+  );
+  const [refreshToken, setRefreshToken] = useState(
+    localStorage.getItem("refreshToken"),
+  );
+  const [username, setUsername] = useState(localStorage.getItem("username"));
+  const [userId, setUserId] = useState(localStorage.getItem("userId"));
+
+  // Sync state to LocalStorage
+  useEffect(() => {
+    if (authToken) localStorage.setItem("authToken", authToken);
+    else localStorage.removeItem("authToken");
+
+    if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
+    else localStorage.removeItem("refreshToken");
+
+    if (authTokenType) localStorage.setItem("authTokenType", authTokenType);
+    else localStorage.removeItem("authTokenType");
+
+    if (username) localStorage.setItem("username", username);
+    else localStorage.removeItem("username");
+
+    if (userId) localStorage.setItem("userId", userId);
+    else localStorage.removeItem("userId");
+  }, [authToken, authTokenType, refreshToken, username, userId]);
+
+  const login = (data: any) => {
+    setAuthToken(data.authToken);
+    setAuthTokenType(data.authTokenType);
+    setRefreshToken(data.refresh_token);
+    setUsername(data.user.username);
+    setUserId(data.user.id);
+  };
+
+  const logout = () => {
+    setAuthToken(null);
+    setAuthTokenType(null);
+    setRefreshToken(null);
+    setUsername(null);
+    setUserId(null);
+  };
+
+  const authFetch = async (
+    url: string,
+    options: RequestInit = {},
+  ): Promise<Response> => {
+    const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    const isFormData = options.body instanceof FormData;
+
+    // Initialize from existing options.headers if any
+    const headers = new Headers(options.headers);
+
+    headers.set("Authorization", `${authTokenType} ${authToken}`);
+
+    if (isFormData) {
+      // CRITICAL: You must NOT have a 'Content-Type' header here.
+      // If it was accidentally set by a previous operation, remove it.
+      headers.delete("Content-Type");
+    } else {
+      // Only set JSON for non-file requests
+      headers.set("Content-Type", "application/json");
+    }
+
+    // 4. Clean URL (preventing double slashes)
+    const endpoint = url.startsWith("/") ? url.slice(1) : url;
+
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+      ...options,
+      headers: headers, // fetch accepts a Headers object
+    });
+
+    // 2. Handle 401 Unauthorized (Token Expired)
+    if (response.status === 401 && refreshToken) {
+      const refreshResponse = await fetch(`${BASE_URL}refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      });
+
+      if (refreshResponse.ok) {
+        const data = await refreshResponse.json();
+
+        // 3. Update State (Rotation!)
+        setAuthToken(data.access_token);
+        setRefreshToken(data.refresh_token);
+
+        // 4. Retry the original request with the new token
+        return fetch(url, {
+          ...options,
+          headers: {
+            ...options.headers,
+            Authorization: `${data.authTokenType} ${data.access_token}`,
+            "Content-Type": "application/json",
+          },
+        });
+      } else {
+        logout(); // Refresh token was invalid/expired
+      }
+    }
+
+    return response;
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{
+        authToken,
+        refreshToken,
+        username,
+        userId,
+        login,
+        logout,
+        authFetch,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
+  return context;
+};

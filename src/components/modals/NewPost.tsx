@@ -4,17 +4,12 @@ import { Box, Button, TextField, Typography } from "@mui/material";
 import "../../styles/newPost.css";
 import { INewPost, IPost } from "../props";
 import { style } from "./modal_style";
+import { useAuth } from "../AuthContext";
 
-const BASE_URL = "http://localhost:8000/";
-
-const NewPost = ({
-  authToken,
-  authTokenType,
-  setPosts,
-  onSuccess,
-}: INewPost) => {
+const NewPost = ({ setPosts, onSuccess }: INewPost) => {
   const [image, setImage] = useState<File | null>(null);
   const [caption, setCaption] = useState("");
+  const { authFetch } = useAuth();
 
   const handleFileData = (evt: React.ChangeEvent<HTMLInputElement>): void => {
     const imgData = evt.target.files ? evt.target.files[0] : null;
@@ -31,9 +26,8 @@ const NewPost = ({
       // 1. First async step: Upload the image file
       const formData = new FormData();
       if (image) formData.append("file", image);
-      const imgResponse = await fetch(`${BASE_URL}post/image`, {
+      const imgResponse = await authFetch("post/image", {
         method: "POST",
-        headers: { Authorization: `Bearer ${authToken}` },
         body: formData, // your Multipart data
       });
 
@@ -41,12 +35,8 @@ const NewPost = ({
       const { filename } = await imgResponse.json();
 
       // STEP 2: Send the JSON to save the post in Postgres
-      const postResponse = await fetch(`${BASE_URL}post/create`, {
+      const postResponse = await authFetch(`post/create`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `${authTokenType} ${authToken}`,
-        },
         body: JSON.stringify({
           image_url: filename,
           image_url_type: "relative",
@@ -62,9 +52,10 @@ const NewPost = ({
           comments: [],
         };
         setPosts((prev) => [formattedPost, ...prev]);
+        window.scrollTo(0, 0);
         setImage(null);
         setCaption("");
-        onSuccess(false);
+        onSuccess();
       }
     } catch (err) {
       console.error("Upload failed", err);

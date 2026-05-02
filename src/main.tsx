@@ -2,6 +2,7 @@
 import { createRoot } from "react-dom/client";
 import { ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
+import { AuthProvider } from "./components/AuthContext.tsx";
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
@@ -13,8 +14,10 @@ import App from "./components/App.tsx";
 createRoot(document.getElementById("root")!).render(
   <>
     <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <App />
+      <AuthProvider>
+        <CssBaseline />
+        <App />
+      </AuthProvider>
     </ThemeProvider>
   </>,
 );
