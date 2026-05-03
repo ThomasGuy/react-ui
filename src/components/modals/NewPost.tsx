@@ -48,6 +48,7 @@ const NewPost = ({ setPosts, onSuccess }: INewPost) => {
         const newPostData = await postResponse.json();
         const formattedPost: IPost = {
           ...newPostData,
+          timestamp: new Date(newPostData.created_at),
           user: { username: newPostData.username },
           comments: [],
         };

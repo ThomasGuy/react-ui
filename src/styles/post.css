@@ -75,10 +75,16 @@
   flex-direction: row;
   justify-content: flex-end;
   align-items: center;
+  padding: 3px 0;
 }
 
-.post_like_section {
-  padding: 3px 0;
+.post_like_section button {
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 1.1rem;
 }
 
 .post_like_count {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 
 import { IPost } from "./props";
@@ -19,28 +20,41 @@ function App() {
       view.type === "profile" ? `post/user/${view.username}` : "post"; // your all_posts route
 
     authFetch(endpoint)
-      .then((res) => res.json())
-      .then((data) => setPosts(data));
+      .then((res) => (res.ok ? res.json() : Promise.reject(res)))
+      .then((data) => setPosts(data))
+      .catch((err) => console.error("Fetch error view:", err));
   }, [view, authFetch]); // Re-fetch whenever the view changes
 
   useEffect(() => {
-    const headers: HeadersInit = {
-      "Content-Type": "application/json",
+    const fetch_all = async () => {
+      try {
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
+
+        if (authToken) {
+          headers["Authorization"] = `Bearer ${authToken}`;
+        }
+
+        const res = await authFetch(`post/all`, {
+          method: "GET",
+          headers: headers,
+        });
+
+        if (res.ok) {
+          const allPosts = await res.json();
+          const formatted: IPost[] = allPosts.map((post: any) => ({
+            ...post,
+            timestamp: new Date(post.created_at),
+            user: { username: post.user.username },
+          }));
+          setPosts(formatted);
+        }
+      } catch (err) {
+        console.error("post_all failed", err);
+      }
     };
-
-    if (authToken) {
-      headers["Authorization"] = `Bearer ${authToken}`;
-    }
-
-    authFetch(`post/all`, {
-      method: "GET",
-      headers: headers,
-      // Required because of Axum's allow_credentials(true)
-      // credentials: "include",
-    })
-      .then((res) => (res.ok ? res.json() : Promise.reject(res)))
-      .then((data: IPost[]) => setPosts(data))
-      .catch((err) => console.error("Fetch error:", err));
+    fetch_all();
   }, [authFetch, authToken]);
 
   return (

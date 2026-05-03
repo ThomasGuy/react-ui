@@ -116,27 +116,21 @@ const Post = ({ post, setPosts, setView }: PostProps) => {
           </Button>
         </div>
       </div>
+
       <img
         className="post_image"
         src={`${BASE_URL}images/${post.image_url}`}
         alt={post.caption ? post.caption : "nothing"}
       />
+
       <div className="post_footer">
         <div className="post_like_section">
           {/* The Clickable Heart */}
-          <button
-            onClick={handleLike}
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: 0,
-            }}
-          >
+          <button onClick={handleLike}>
             {post.has_liked ? (
-              <span style={{ fontSize: "16px", color: "red" }}>❤️</span>
+              <span style={{ color: "red" }}>❤️</span>
             ) : (
-              <span style={{ fontSize: "16px" }}>🤍</span>
+              <span>🤍</span>
             )}
           </button>
 
@@ -146,7 +140,9 @@ const Post = ({ post, setPosts, setView }: PostProps) => {
           </h4>
         </div>
       </div>
+
       <h4 className="post_caption">{post.caption}</h4>
+
       <div className="post_comments">
         {post.comments.map((c) => (
           <p key={c.id}>
@@ -155,6 +151,7 @@ const Post = ({ post, setPosts, setView }: PostProps) => {
           </p>
         ))}
       </div>
+
       {authToken && (
         <form className="post_commentbox">
           <input
