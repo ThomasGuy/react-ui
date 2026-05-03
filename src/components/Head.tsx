@@ -15,6 +15,7 @@ const Head = ({ setPosts }: HeadProps) => {
 
   // Grab everything we need from Context
   const { authToken, logout } = useAuth();
+  const isLoggedIn = !!authToken;
 
   return (
     <div className="head">
@@ -37,7 +38,7 @@ const Head = ({ setPosts }: HeadProps) => {
         alt="instagram"
       />
 
-      {authToken ? (
+      {isLoggedIn ? (
         <div>
           <Button variant="outlined" onClick={() => setNewPostOpen(true)}>
             New Post

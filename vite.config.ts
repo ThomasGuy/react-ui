@@ -22,10 +22,12 @@ export default defineConfig({
     target: "es2025",
   },
   server: {
+    host: "0.0.0.0",
+    port: 5173,
     proxy: {
-      "/user": "http://127.0.0.1:8000",
-      "/post": "http://127.0.0.1:8000",
-      "/images": "http://127.0.0.1:8000",
+      "/user": "http://0.0.0.0:8000",
+      "/post": "http://0.0.0.0:8000",
+      "/images": "http://0.0.0.0:8000",
     },
   },
 });

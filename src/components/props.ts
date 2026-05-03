@@ -12,11 +12,22 @@ export interface HeadProps {
   setPosts: ISetPosts;
 }
 
+export interface PostProps {
+  post: IPost;
+  setPosts: ISetPosts;
+  setView: React.Dispatch<
+    React.SetStateAction<{
+      type: "feed" | "profile";
+      username?: string;
+    }>
+  >;
+}
+
 export interface IComment {
   id: Uuid;
   comment: string;
   username: string;
-  timestamp: Date;
+  timestamp: string;
 }
 
 export interface IPost {
@@ -28,6 +39,8 @@ export interface IPost {
   timestamp: Date;
   user: { username: string };
   comments: IComment[];
+  likes_count: number;
+  has_liked: boolean;
 }
 
 export interface INewPost {

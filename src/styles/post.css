@@ -46,6 +46,7 @@
   font-weight: bold;
   font-size: 18px;
   line-height: 2;
+  cursor: pointer;
 }
 
 .post_delete {
@@ -67,4 +68,19 @@
   border-top: 1px solid lightgray;
   background-color: transparent;
   color: lightblue;
+}
+
+.post_like_section {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.post_like_section {
+  padding: 3px 0;
+}
+
+.post_like_count {
+  padding: 0 10px;
 }

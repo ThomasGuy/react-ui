@@ -59,6 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setRefreshToken(null);
     setUsername(null);
     setUserId(null);
+    localStorage.clear();
   };
 
   const authFetch = async (
@@ -69,17 +70,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const isFormData = options.body instanceof FormData;
 
     // Initialize from existing options.headers if any
-    const headers = new Headers(options.headers);
+    const newHeaders = new Headers(options.headers);
 
-    headers.set("Authorization", `${authTokenType} ${authToken}`);
+    newHeaders.set("Authorization", `${authTokenType} ${authToken}`);
 
     if (isFormData) {
       // CRITICAL: You must NOT have a 'Content-Type' header here.
       // If it was accidentally set by a previous operation, remove it.
-      headers.delete("Content-Type");
+      newHeaders.delete("Content-Type");
     } else {
       // Only set JSON for non-file requests
-      headers.set("Content-Type", "application/json");
+      newHeaders.set("Content-Type", "application/json");
     }
 
     // 4. Clean URL (preventing double slashes)
@@ -87,12 +88,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const response = await fetch(`${BASE_URL}${endpoint}`, {
       ...options,
-      headers: headers, // fetch accepts a Headers object
+      headers: newHeaders, // fetch accepts a Headers object
     });
 
     // 2. Handle 401 Unauthorized (Token Expired)
     if (response.status === 401 && refreshToken) {
-      const refreshResponse = await fetch(`${BASE_URL}refresh`, {
+      const refreshResponse = await fetch(`${BASE_URL}user/refresh`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refresh_token: refreshToken }),
@@ -102,15 +103,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const data = await refreshResponse.json();
 
         // 3. Update State (Rotation!)
-        setAuthToken(data.access_token);
+        setAuthToken(data.authToken);
         setRefreshToken(data.refresh_token);
 
         // 4. Retry the original request with the new token
-        return fetch(url, {
+        return fetch(`${BASE_URL}${endpoint}`, {
           ...options,
           headers: {
-            ...options.headers,
-            Authorization: `${data.authTokenType} ${data.access_token}`,
+            ...newHeaders,
+            Authorization: `${authTokenType} ${data.authToken}`,
             "Content-Type": "application/json",
           },
         });
