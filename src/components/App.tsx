@@ -9,57 +9,34 @@ import { useAuth } from "./AuthContext";
 
 function App() {
   const [posts, setPosts] = useState<IPost[]>([]);
-  const { authFetch, authToken } = useAuth();
+  const { authFetch } = useAuth();
   const [view, setView] = useState<{
     type: "feed" | "profile";
     username?: string;
   }>({ type: "feed" });
 
   useEffect(() => {
+    if (view.type === "profile" && !view.username) return;
+
     const endpoint =
-      view.type === "profile" ? `post/user/${view.username}` : "post"; // your all_posts route
+      view.type === "profile" ? `post/user/${view.username}` : "post/all"; // all_posts route
 
     authFetch(endpoint)
       .then((res) => (res.ok ? res.json() : Promise.reject(res)))
-      .then((data) => setPosts(data))
+      .then((data) => {
+        const formatted: IPost[] = data.map((post: any) => ({
+          ...post,
+          timestamp: new Date(post.created_at),
+          user: { username: post.user.username },
+        }));
+        setPosts(formatted);
+      })
       .catch((err) => console.error("Fetch error view:", err));
   }, [view, authFetch]); // Re-fetch whenever the view changes
 
-  useEffect(() => {
-    const fetch_all = async () => {
-      try {
-        const headers: HeadersInit = {
-          "Content-Type": "application/json",
-        };
-
-        if (authToken) {
-          headers["Authorization"] = `Bearer ${authToken}`;
-        }
-
-        const res = await authFetch(`post/all`, {
-          method: "GET",
-          headers: headers,
-        });
-
-        if (res.ok) {
-          const allPosts = await res.json();
-          const formatted: IPost[] = allPosts.map((post: any) => ({
-            ...post,
-            timestamp: new Date(post.created_at),
-            user: { username: post.user.username },
-          }));
-          setPosts(formatted);
-        }
-      } catch (err) {
-        console.error("post_all failed", err);
-      }
-    };
-    fetch_all();
-  }, [authFetch, authToken]);
-
   return (
     <div className="app">
-      <Head setPosts={setPosts} />
+      <Head setPosts={setPosts} view={view} setView={setView} />
       <div className="app_posts">
         {posts.map((post) => (
           <Post

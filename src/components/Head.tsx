@@ -8,7 +8,7 @@ import Login from "./modals/login";
 import SignUp from "./modals/signUp";
 import { useAuth } from "./AuthContext";
 
-const Head = ({ setPosts }: HeadProps) => {
+const Head = ({ setPosts, view, setView }: HeadProps) => {
   const [loginOpen, setLoginOpen] = useState(false);
   const [openSignUp, setOpenSignUp] = useState(false);
   const [newPostOpen, setNewPostOpen] = useState(false);
@@ -40,6 +40,14 @@ const Head = ({ setPosts }: HeadProps) => {
 
       {isLoggedIn ? (
         <div>
+          {view.type === "profile" && (
+            <Button
+              variant="outlined"
+              onClick={() => setView({ type: "feed" })}
+            >
+              Back
+            </Button>
+          )}
           <Button variant="outlined" onClick={() => setNewPostOpen(true)}>
             New Post
           </Button>
@@ -50,6 +58,14 @@ const Head = ({ setPosts }: HeadProps) => {
         </div>
       ) : (
         <div>
+          {view.type === "profile" && (
+            <Button
+              variant="outlined"
+              onClick={() => setView({ type: "feed" })}
+            >
+              Back
+            </Button>
+          )}
           <Button variant="outlined" onClick={() => setLoginOpen(true)}>
             LOGIN
           </Button>

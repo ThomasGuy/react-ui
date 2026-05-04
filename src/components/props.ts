@@ -10,6 +10,16 @@ export interface ISuccess {
 }
 export interface HeadProps {
   setPosts: ISetPosts;
+  view: {
+    type: "feed" | "profile";
+    username?: string;
+  };
+  setView: React.Dispatch<
+    React.SetStateAction<{
+      type: "feed" | "profile";
+      username?: string;
+    }>
+  >;
 }
 
 export interface PostProps {
@@ -46,40 +56,4 @@ export interface IPost {
 export interface INewPost {
   setPosts: ISetPosts;
   onSuccess: () => void;
-}
-
-export interface ILogin {
-  access_token: string | null;
-  authTokenType: string | null;
-  refresh_token: string | null;
-  username: string | null;
-  userId: Uuid | null;
-  // setAuthToken: React.Dispatch<React.SetStateAction<string | null>>;
-  // setAuthTokenType: React.Dispatch<React.SetStateAction<string | null>>;
-  // setRefreshToken: React.Dispatch<React.SetStateAction<string | null>>;
-  // setUsername: React.Dispatch<React.SetStateAction<string | null>>;
-  // setUserId: React.Dispatch<React.SetStateAction<Uuid | null>>;
-}
-
-export interface IUser {
-  id: Uuid;
-  email: string;
-  username: string;
-  display_name: string | null;
-  bio: string | null;
-  avatar_url: string | null;
-  is_active: boolean | null;
-  is_admin: boolean | null;
-  email_verified_at: string | null;
-  last_login_at: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-}
-
-// This matches the Json<AuthResponse> from your Rust code
-export interface IAuthResponse {
-  access_token: string;
-  refresh_token: string;
-  token_type: string; // Matches your Rust 'token_type: "Bearer".to_string()'
-  user: IUser; // The nested user object
 }
