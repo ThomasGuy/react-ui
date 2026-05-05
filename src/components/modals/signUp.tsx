@@ -3,7 +3,7 @@ import { Box, Button, TextField, Typography } from "@mui/material";
 
 import "../../styles/head.css";
 import { style } from "./modal_style";
-import { ISuccess } from "../props";
+import { ISuccess } from "../types";
 import { useAuth } from "../AuthContext";
 
 const SignUp = ({ onSuccess }: ISuccess) => {
@@ -76,7 +76,12 @@ const SignUp = ({ onSuccess }: ISuccess) => {
           onChange={(evt) => setPassword(evt.target.value)}
         />
         <br />
-        <Button type="submit" onClick={handleSignUp}>
+        <Button
+          variant="contained"
+          color="primary"
+          type="submit"
+          onClick={handleSignUp}
+        >
           submit
         </Button>
       </form>

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Box, Button, TextField, Typography } from "@mui/material";
 
 import "../../styles/newPost.css";
-import { INewPost, IPost } from "../props";
+import { INewPost, IPost } from "../types";
 import { style } from "./modal_style";
 import { useAuth } from "../AuthContext";
 
@@ -84,7 +84,12 @@ const NewPost = ({ setPosts, onSuccess }: INewPost) => {
         <br />
         <TextField type="file" id="fileInput" onChange={handleFileData} />
         <br />
-        <Button className="imageupload_button" onClick={handleCreatePost}>
+        <Button
+          variant="contained"
+          color="primary"
+          type="submit"
+          onClick={handleCreatePost}
+        >
           UPLOAD
         </Button>
       </div>

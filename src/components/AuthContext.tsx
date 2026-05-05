@@ -1,15 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { jwtDecode } from "jwt-decode";
 import React, { createContext, useContext, useState, useEffect } from "react";
-// import { ILogin } from "./props";
+import { IAuthUser } from "./types";
 
 interface AuthContextType {
   authToken: string | null;
   refreshToken: string | null;
-  username: string | null;
-  userId: string | null;
+  // username: string | null;
+  // userId: string | null;
   login: (data: any) => void;
   logout: () => void;
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;
+  isLoading: boolean;
+  user: IAuthUser | null;
+}
+
+interface IJwtClaims {
+  sub: string;
+  exp: number;
+  token_type: "Access" | "Refresh";
+  is_admin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,6 +36,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
   const [username, setUsername] = useState(localStorage.getItem("username"));
   const [userId, setUserId] = useState(localStorage.getItem("userId"));
+
+  const [user, setUser] = useState<IAuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // Start as true
+
+  useEffect(() => {
+    const initAuth = async () => {
+      // Force a  delay to see the UI Skeleton isLoading
+      await new Promise((resolve) => setTimeout(resolve, 400));
+
+      if (authToken) {
+        try {
+          const decoded = jwtDecode<IJwtClaims>(authToken);
+          setUser({
+            id: decoded.sub,
+            isAdmin: decoded.is_admin, // Matches your Rust struct
+            type: decoded.token_type, // 'Access' or 'Refresh'
+          });
+        } catch (err) {
+          console.error("Token decode failed", err);
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
+      setIsLoading(false); // stoploading regardless of outcome
+    };
+
+    initAuth();
+  }, [authToken]);
 
   // Sync state to LocalStorage
   useEffect(() => {
@@ -72,7 +111,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     // Initialize from existing options.headers if any
     const newHeaders = new Headers(options.headers);
 
-    newHeaders.set("Authorization", `${authTokenType} ${authToken}`);
+    if (authToken)
+      newHeaders.set("Authorization", `${authTokenType} ${authToken}`);
 
     if (isFormData) {
       // CRITICAL: You must NOT have a 'Content-Type' header here.
@@ -128,11 +168,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       value={{
         authToken,
         refreshToken,
-        username,
-        userId,
+        // username,
+        // userId,
         login,
         logout,
         authFetch,
+        isLoading,
+        user,
       }}
     >
       {children}

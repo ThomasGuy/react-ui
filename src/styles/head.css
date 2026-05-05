@@ -7,8 +7,8 @@
   align-items: center;
   max-height: 100px;
   padding: 20px;
-  background-color: rgb(255, 255, 255);
-  border-bottom: 1px solid lightgray;
+  background-color: var(--mui-palette-background-paper);
+  border-bottom: 1px solid var(--mui-palette-divider);
 
   img {
     object-fit: contain;
@@ -38,4 +38,14 @@
   input {
     height: 10px;
   }
+}
+
+.skeleton Skeleton {
+  width: 80px;
+  height: 36px;
+  display: inline-block !important;
+}
+
+.skeleton-margin {
+  margin-right: 10px;
 }

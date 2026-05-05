@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Button, Modal } from "@mui/material";
+import { Button, Modal, Skeleton } from "@mui/material";
 
 import "../styles/head.css";
-import { HeadProps } from "./props";
+import { HeadProps } from "./types";
 import NewPost from "./modals/NewPost";
 import Login from "./modals/login";
 import SignUp from "./modals/signUp";
@@ -14,13 +14,15 @@ const Head = ({ setPosts, view, setView }: HeadProps) => {
   const [newPostOpen, setNewPostOpen] = useState(false);
 
   // Grab everything we need from Context
-  const { authToken, logout } = useAuth();
-  const isLoggedIn = !!authToken;
+  const { logout, isLoading, user } = useAuth();
+
+  if (isLoading) {
+    return <Skeleton />; // Or a nice MUI Skeleton
+  }
 
   return (
     <div className="head">
       <Modal open={loginOpen} onClose={() => setLoginOpen(false)}>
-        {/* Login now handles its own state updates internally via useAuth */}
         <Login onSuccess={() => setLoginOpen(false)} />
       </Modal>
 
@@ -29,7 +31,6 @@ const Head = ({ setPosts, view, setView }: HeadProps) => {
       </Modal>
 
       <Modal open={newPostOpen} onClose={() => setNewPostOpen(false)}>
-        {/* NewPost no longer needs tokens passed as props! */}
         <NewPost setPosts={setPosts} onSuccess={() => setNewPostOpen(false)} />
       </Modal>
 
@@ -38,21 +39,61 @@ const Head = ({ setPosts, view, setView }: HeadProps) => {
         alt="instagram"
       />
 
-      {isLoggedIn ? (
+      {isLoading ? (
+        // 1. Show Pulse Skeletons while checking the JWT
+        <div className="skeleton">
+          <Skeleton variant="rounded" />
+          <Skeleton variant="rounded" className="skeleton-margin" />
+        </div>
+      ) : user ? (
         <div>
           {view.type === "profile" && (
             <Button
-              variant="outlined"
+              variant="contained"
               onClick={() => setView({ type: "feed" })}
             >
               Back
             </Button>
           )}
-          <Button variant="outlined" onClick={() => setNewPostOpen(true)}>
+
+          {/* New Admin Button */}
+          {user.isAdmin && view.type !== "admin_users" && (
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => setView({ type: "admin_users" })}
+              sx={{ mr: 2 }}
+            >
+              Admin
+            </Button>
+          )}
+
+          {view.type === "admin_users" && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setView({ type: "feed" })}
+              sx={{ mr: 2 }}
+            >
+              Back to Feed
+            </Button>
+          )}
+
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setNewPostOpen(true)}
+            sx={{ mr: 2 }}
+          >
             New Post
           </Button>
-          {/* logout() is now a one-liner from context */}
-          <Button variant="outlined" onClick={logout}>
+
+          <Button
+            variant="contained"
+            color="primary"
+            sx={{ mr: 2 }}
+            onClick={logout}
+          >
             Log Out
           </Button>
         </div>
@@ -60,16 +101,27 @@ const Head = ({ setPosts, view, setView }: HeadProps) => {
         <div>
           {view.type === "profile" && (
             <Button
-              variant="outlined"
+              variant="contained"
               onClick={() => setView({ type: "feed" })}
             >
               Back
             </Button>
           )}
-          <Button variant="outlined" onClick={() => setLoginOpen(true)}>
+
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setLoginOpen(true)}
+            sx={{ mr: 2 }}
+          >
             LOGIN
           </Button>
-          <Button variant="outlined" onClick={() => setOpenSignUp(true)}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setOpenSignUp(true)}
+            sx={{ mr: 2 }}
+          >
             SIGNUP
           </Button>
         </div>

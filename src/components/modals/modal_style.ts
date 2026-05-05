@@ -1,11 +1,15 @@
 export const style = {
+  position: "absolute",
   top: "50%",
   left: "50%",
-  transform: `translate(-50%, -50%)`,
-  bgcolor: "background.paper",
-  position: "absolute",
+  transform: "translate(-50%, -50%)",
   width: "400px",
-  border: "2px solid #000",
+
+  bgcolor: "var(--mui-palette-background-paper)",
+  borderColor: "divider",
+  border: "2px solid",
+
   boxShadow: 24,
-  color: `#0f1020`,
+  p: 4,
+  color: "text.primary",
 };

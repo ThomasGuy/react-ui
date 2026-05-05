@@ -1,5 +1,5 @@
 .app {
-  background-color: rgb(250, 250, 250);
+  background-color: var(--mui-palette-background-default);
   max-width: 1080px;
   margin-left: auto;
   margin-right: auto;

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Box, Button, TextField, Typography } from "@mui/material";
 
 import "../../styles/head.css";
-import { ISuccess } from "../props";
+import { ISuccess } from "../types";
 import { style } from "./modal_style";
 import { useAuth } from "../AuthContext";
 
@@ -64,7 +64,12 @@ const Login = ({ onSuccess }: ISuccess) => {
           onChange={(evt) => setPassword(evt.target.value)}
         />
         <br />
-        <Button type="submit" onClick={handleLogin}>
+        <Button
+          variant="contained"
+          color="primary"
+          type="submit"
+          onClick={handleLogin}
+        >
           Login
         </Button>
       </form>

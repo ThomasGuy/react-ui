@@ -4,17 +4,17 @@
   width: 60%;
   margin-left: auto;
   margin-right: auto;
-  background-color: white;
+  background-color: var(--mui-palette-background-paper);
   max-width: 500px;
-  border: 1px solid lightgray;
+  border: 1px solid var(--mui-palette-divider);
   margin-bottom: 45px;
 }
 
 .post_image {
   width: 100%;
   object-fit: contain;
-  border-top: 1px solid lightgray;
-  border-bottom: 1px solid lightgray;
+  border-top: 1px solid var(--mui-palette-divider);
+  border-bottom: 1px solid var(--mui-palette-divider);
 }
 
 .post_caption {
@@ -22,7 +22,7 @@
   font-weight: normal;
   font-size: 16px;
   text-align: left;
-  border-bottom: 1px solid lightgray;
+  border-bottom: 1px solid var(--mui-palette-divider);
 }
 
 .post_comments {
@@ -59,13 +59,13 @@
 .post_input {
   flex: 1;
   border: none;
-  border-top: 1px solid lightgray;
+  border-top: 1px solid var(--mui-palette-divider);
 }
 
 .post_button {
   flex: 0;
   border: none;
-  border-top: 1px solid lightgray;
+  border-top: 1px solid var(--mui-palette-divider);
   background-color: transparent;
   color: lightblue;
 }

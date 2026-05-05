@@ -3,15 +3,15 @@ import { Avatar, Button } from "@mui/material";
 import { DeleteForeverOutlined, Send } from "@mui/icons-material";
 
 import "../styles/post.css";
-import { PostProps } from "./props";
+import { PostProps } from "./types";
 import { useAuth } from "./AuthContext";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const Post = ({ post, setPosts, setView }: PostProps) => {
   const [newComment, setNewComment] = useState<string | "">("");
-  const { authToken, authFetch } = useAuth();
   const [isLiking, setIsLiking] = useState(false);
+  const { authToken, authFetch } = useAuth();
 
   const handleDelete = async (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
@@ -57,7 +57,10 @@ const Post = ({ post, setPosts, setView }: PostProps) => {
     setNewComment("");
   };
 
-  const handleLike = async () => {
+  const handleLike = async (
+    evt: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => {
+    evt.preventDefault();
     if (!authToken) {
       alert("Login to like posts!");
       return;

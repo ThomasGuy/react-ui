@@ -1,9 +1,9 @@
 // import React from "react";
 import { Dispatch, SetStateAction } from "react";
 
-export type ISetPosts = Dispatch<SetStateAction<IPost[]>>;
-
 export type Uuid = `${string}-${string}-${string}-${string}-${string}`;
+
+export type ISetPosts = Dispatch<SetStateAction<IPost[]>>;
 
 export interface ISuccess {
   onSuccess: () => void;
@@ -11,12 +11,12 @@ export interface ISuccess {
 export interface HeadProps {
   setPosts: ISetPosts;
   view: {
-    type: "feed" | "profile";
+    type: "feed" | "profile" | "admin_users";
     username?: string;
   };
   setView: React.Dispatch<
     React.SetStateAction<{
-      type: "feed" | "profile";
+      type: "feed" | "profile" | "admin_users";
       username?: string;
     }>
   >;
@@ -27,7 +27,7 @@ export interface PostProps {
   setPosts: ISetPosts;
   setView: React.Dispatch<
     React.SetStateAction<{
-      type: "feed" | "profile";
+      type: "feed" | "profile" | "admin_users";
       username?: string;
     }>
   >;
@@ -56,4 +56,19 @@ export interface IPost {
 export interface INewPost {
   setPosts: ISetPosts;
   onSuccess: () => void;
+}
+
+export interface IAuthUser {
+  id: string; // maps to 'sub'
+  isAdmin: boolean;
+  type: "Access" | "Refresh";
+}
+
+export interface IUserResponse {
+  id: Uuid;
+  email: string;
+  username: string;
+  isAdmin: boolean;
+  lastLoginAt: Date | null;
+  createdAt: Date;
 }
