@@ -6,7 +6,7 @@ import { IAuthUser } from "./types";
 interface AuthContextType {
   authToken: string | null;
   refreshToken: string | null;
-  // username: string | null;
+  authUsername: string | null;
   // userId: string | null;
   login: (data: any) => void;
   logout: () => void;
@@ -24,17 +24,11 @@ interface IJwtClaims {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [authToken, setAuthToken] = useState(localStorage.getItem("authToken"));
-  const [authTokenType, setAuthTokenType] = useState(
-    localStorage.getItem("authTokenType"),
-  );
-  const [refreshToken, setRefreshToken] = useState(
-    localStorage.getItem("refreshToken"),
-  );
-  const [username, setUsername] = useState(localStorage.getItem("username"));
+  const [authTokenType, setAuthTokenType] = useState(localStorage.getItem("authTokenType"));
+  const [refreshToken, setRefreshToken] = useState(localStorage.getItem("refreshToken"));
+  const [authUsername, setAuthUsername] = useState(localStorage.getItem("username"));
   const [userId, setUserId] = useState(localStorage.getItem("userId"));
 
   const [user, setUser] = useState<IAuthUser | null>(null);
@@ -43,14 +37,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     const initAuth = async () => {
       // Force a  delay to see the UI Skeleton isLoading
-      await new Promise((resolve) => setTimeout(resolve, 400));
+      // await new Promise((resolve) => setTimeout(resolve, 1400));
 
       if (authToken) {
         try {
           const decoded = jwtDecode<IJwtClaims>(authToken);
           setUser({
             id: decoded.sub,
-            isAdmin: decoded.is_admin, // Matches your Rust struct
+            isAdmin: decoded.is_admin, // Matches your Rust Claims struct
             type: decoded.token_type, // 'Access' or 'Refresh'
           });
         } catch (err) {
@@ -77,18 +71,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     if (authTokenType) localStorage.setItem("authTokenType", authTokenType);
     else localStorage.removeItem("authTokenType");
 
-    if (username) localStorage.setItem("username", username);
-    else localStorage.removeItem("username");
+    if (authUsername) localStorage.setItem("authUsername", authUsername);
+    else localStorage.removeItem("authUsername");
 
     if (userId) localStorage.setItem("userId", userId);
     else localStorage.removeItem("userId");
-  }, [authToken, authTokenType, refreshToken, username, userId]);
+  }, [authToken, authTokenType, refreshToken, authUsername, userId]);
 
   const login = (data: any) => {
     setAuthToken(data.authToken);
     setAuthTokenType(data.authTokenType);
     setRefreshToken(data.refresh_token);
-    setUsername(data.user.username);
+    setAuthUsername(data.user.username);
     setUserId(data.user.id);
   };
 
@@ -96,23 +90,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setAuthToken(null);
     setAuthTokenType(null);
     setRefreshToken(null);
-    setUsername(null);
+    setAuthUsername(null);
     setUserId(null);
     localStorage.clear();
   };
 
-  const authFetch = async (
-    url: string,
-    options: RequestInit = {},
-  ): Promise<Response> => {
+  const authFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
     const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     const isFormData = options.body instanceof FormData;
 
     // Initialize from existing options.headers if any
     const newHeaders = new Headers(options.headers);
 
-    if (authToken)
-      newHeaders.set("Authorization", `${authTokenType} ${authToken}`);
+    if (authToken) newHeaders.set("Authorization", `${authTokenType} ${authToken}`);
 
     if (isFormData) {
       // CRITICAL: You must NOT have a 'Content-Type' header here.
@@ -168,7 +158,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       value={{
         authToken,
         refreshToken,
-        // username,
+        authUsername,
         // userId,
         login,
         logout,

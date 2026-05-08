@@ -11,11 +11,9 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const Post = ({ post, setPosts, setView }: PostProps) => {
   const [newComment, setNewComment] = useState<string | "">("");
   const [isLiking, setIsLiking] = useState(false);
-  const { authToken, authFetch } = useAuth();
+  const { user, authFetch } = useAuth();
 
-  const handleDelete = async (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ) => {
+  const handleDelete = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
 
     const response = await authFetch(`post/delete/${post.id}`, {
@@ -30,12 +28,10 @@ const Post = ({ post, setPosts, setView }: PostProps) => {
     }
   };
 
-  const handlePostComment = async (
-    evt: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ) => {
+  const handlePostComment = async (evt: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     evt.preventDefault();
 
-    const response = await authFetch("comment", {
+    const response = await authFetch("/post/comment", {
       method: "POST",
       body: JSON.stringify({
         post_id: post.id,
@@ -48,20 +44,16 @@ const Post = ({ post, setPosts, setView }: PostProps) => {
 
       setPosts((prevPosts) =>
         prevPosts.map((p) =>
-          p.id === post.id
-            ? { ...p, comments: [...p.comments, createdComment] }
-            : p,
-        ),
+          p.id === post.id ? { ...p, comments: [...p.comments, createdComment] } : p
+        )
       );
     }
     setNewComment("");
   };
 
-  const handleLike = async (
-    evt: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ) => {
+  const handleLike = async (evt: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     evt.preventDefault();
-    if (!authToken) {
+    if (!user) {
       alert("Login to like posts!");
       return;
     }
@@ -83,14 +75,11 @@ const Post = ({ post, setPosts, setView }: PostProps) => {
               return {
                 ...p,
                 has_liked: data.status === "liked",
-                likes_count:
-                  data.status === "liked"
-                    ? p.likes_count + 1
-                    : p.likes_count - 1,
+                likes_count: data.status === "liked" ? p.likes_count + 1 : p.likes_count - 1,
               };
             }
             return p;
-          }),
+          })
         );
       }
     } catch (err) {
@@ -101,18 +90,20 @@ const Post = ({ post, setPosts, setView }: PostProps) => {
     }
   };
 
+  const profileHnadler = () => {
+    setView({ type: "profile", username: post.user.username });
+    window.scrollTo(0, 0);
+  };
+
   return (
     <div className="post">
       <div className="post_header">
         <Avatar alt="Sport" src="" />
-        <h3
-          className="post_headerInfo"
-          onClick={() =>
-            setView({ type: "profile", username: post.user.username })
-          }
-        >
+
+        <h3 className="post_headerInfo" onClick={() => profileHnadler()}>
           {post.user.username}
         </h3>
+
         <div className="post_delete">
           <Button onClick={handleDelete}>
             <DeleteForeverOutlined htmlColor="lightblue" />
@@ -130,11 +121,7 @@ const Post = ({ post, setPosts, setView }: PostProps) => {
         <div className="post_like_section">
           {/* The Clickable Heart */}
           <button onClick={handleLike}>
-            {post.has_liked ? (
-              <span style={{ color: "red" }}>❤️</span>
-            ) : (
-              <span>🤍</span>
-            )}
+            {post.has_liked ? <span style={{ color: "red" }}>❤️</span> : <span>🤍</span>}
           </button>
 
           {/* The Count */}
@@ -155,7 +142,7 @@ const Post = ({ post, setPosts, setView }: PostProps) => {
         ))}
       </div>
 
-      {authToken && (
+      {user && (
         <form className="post_commentbox">
           <input
             className="post_input"

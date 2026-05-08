@@ -17,8 +17,13 @@ const Head = ({ setPosts, view, setView }: HeadProps) => {
   const { logout, isLoading, user } = useAuth();
 
   if (isLoading) {
-    return <Skeleton />; // Or a nice MUI Skeleton
+    return <Skeleton />;
   }
+
+  const backHandler = () => {
+    setView({ type: "feed" });
+    window.scrollTo(0, 0);
+  };
 
   return (
     <div className="head">
@@ -50,7 +55,9 @@ const Head = ({ setPosts, view, setView }: HeadProps) => {
           {view.type === "profile" && (
             <Button
               variant="contained"
-              onClick={() => setView({ type: "feed" })}
+              color="primary"
+              sx={{ mr: 2 }}
+              onClick={() => backHandler()}
             >
               Back
             </Button>
@@ -72,7 +79,7 @@ const Head = ({ setPosts, view, setView }: HeadProps) => {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => setView({ type: "feed" })}
+              onClick={() => backHandler()}
               sx={{ mr: 2 }}
             >
               Back to Feed
@@ -88,12 +95,7 @@ const Head = ({ setPosts, view, setView }: HeadProps) => {
             New Post
           </Button>
 
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{ mr: 2 }}
-            onClick={logout}
-          >
+          <Button variant="contained" color="primary" sx={{ mr: 2 }} onClick={logout}>
             Log Out
           </Button>
         </div>
@@ -102,7 +104,9 @@ const Head = ({ setPosts, view, setView }: HeadProps) => {
           {view.type === "profile" && (
             <Button
               variant="contained"
-              onClick={() => setView({ type: "feed" })}
+              color="primary"
+              sx={{ mr: 2 }}
+              onClick={() => backHandler()}
             >
               Back
             </Button>
@@ -119,8 +123,8 @@ const Head = ({ setPosts, view, setView }: HeadProps) => {
           <Button
             variant="contained"
             color="primary"
-            onClick={() => setOpenSignUp(true)}
             sx={{ mr: 2 }}
+            onClick={() => setOpenSignUp(true)}
           >
             SIGNUP
           </Button>

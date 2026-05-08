@@ -43,10 +43,7 @@ export const AdminUserList = () => {
       return;
     }
 
-    if (
-      !window.confirm("Are you sure you want to permanently delete this user?")
-    )
-      return;
+    if (!window.confirm("Are you sure you want to permanently delete this user?")) return;
 
     try {
       const res = await authFetch(`admin/user/${targetId}`, {

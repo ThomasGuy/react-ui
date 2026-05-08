@@ -1,5 +1,5 @@
-// import React from "react";
 import { Dispatch, SetStateAction } from "react";
+import { AppBarProps } from "@mui/material";
 
 export type Uuid = `${string}-${string}-${string}-${string}-${string}`;
 
@@ -8,7 +8,7 @@ export type ISetPosts = Dispatch<SetStateAction<IPost[]>>;
 export interface ISuccess {
   onSuccess: () => void;
 }
-export interface HeadProps {
+export interface HeadProps extends AppBarProps {
   setPosts: ISetPosts;
   view: {
     type: "feed" | "profile" | "admin_users";
@@ -31,6 +31,7 @@ export interface PostProps {
       username?: string;
     }>
   >;
+  onDeleteRequest: (id: Uuid, username: string) => void;
 }
 
 export interface IComment {
