@@ -3,7 +3,8 @@ export const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: "400px",
+  width: { xs: "350px", sm: "400px" },
+  minWidth: "330px",
 
   bgcolor: "var(--mui-palette-background-paper)",
   borderColor: "divider",

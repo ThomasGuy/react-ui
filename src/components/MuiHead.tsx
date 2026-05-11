@@ -12,9 +12,7 @@ import {
 } from "@mui/material";
 import { HeadProps } from "./types";
 import { useState } from "react";
-import NewPost from "./modals/NewPost";
-import Login from "./modals/login";
-import SignUp from "./modals/signUp";
+import { Login, SignUp, NewPost } from "./modals";
 import { useAuth } from "./AuthContext";
 
 const Head = (props: HeadProps) => {
@@ -24,7 +22,7 @@ const Head = (props: HeadProps) => {
   const [newPostOpen, setNewPostOpen] = useState(false);
 
   // Grab everything we need from Context
-  const { logout, isLoading, user } = useAuth();
+  const { logout, isLoading, user, authUsername } = useAuth();
 
   if (isLoading) {
     return <Skeleton />;
@@ -34,6 +32,8 @@ const Head = (props: HeadProps) => {
     setView({ type: "feed" });
     window.scrollTo(0, 0);
   };
+
+  const titleName = `${authUsername}`.charAt(0).toUpperCase() + `${authUsername}`.slice(1);
 
   return (
     <AppBar position="sticky" color="inherit" {...appBarProps}>
@@ -62,7 +62,7 @@ const Head = (props: HeadProps) => {
               />
             </Grid>
 
-            <Grid sx={{ flexGrow: 1, diaplay: { xs: "none", sm: "grow" } }}>
+            <Grid sx={{ flexGrow: 1 }}>
               <Typography
                 variant="h6"
                 noWrap
@@ -71,9 +71,13 @@ const Head = (props: HeadProps) => {
                   textAlign: "center",
                   width: "100%",
                   display: { xs: "none", sm: "block" },
+                  fontSize: {
+                    sm: "1.5rem", // roughly h5 size
+                    lg: "2.125rem", // roughly h4 size
+                  },
                 }}
               >
-                MuiApp
+                {user ? `${titleName}` : "Mui-App"}
               </Typography>
             </Grid>
 

@@ -52,6 +52,7 @@ export interface IPost {
   comments: IComment[];
   likes_count: number;
   has_liked: boolean;
+  view_count?: number;
 }
 
 export interface INewPost {
@@ -72,4 +73,17 @@ export interface IUserResponse {
   isAdmin: boolean;
   lastLoginAt: Date | null;
   createdAt: Date;
+}
+
+export interface IPostResponse {
+  id: Uuid;
+  user_id: Uuid;
+  caption: string | null;
+  username: string;
+  image_url: string;
+  image_url_type: string;
+  view_count: number;
+  created_at: string;
+  updated_at: string;
+  comments: IComment[];
 }

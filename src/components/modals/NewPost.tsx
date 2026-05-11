@@ -1,14 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
-import { Box, Button, TextField, Typography } from "@mui/material";
+import { Box, Button, Input, Stack, TextField, Typography } from "@mui/material";
 
-import "../../styles/newPost.css";
-import { INewPost, IPost } from "../types";
+import { INewPost, IPost, IPostResponse } from "../types";
 import { style } from "./modal_style";
 import { useAuth } from "../AuthContext";
 
-const NewPost = ({ setPosts, onSuccess }: INewPost) => {
+export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
   const [image, setImage] = useState<File | null>(null);
   const [caption, setCaption] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const { authFetch } = useAuth();
 
   const handleFileData = (evt: React.ChangeEvent<HTMLInputElement>): void => {
@@ -18,10 +20,9 @@ const NewPost = ({ setPosts, onSuccess }: INewPost) => {
     }
   };
 
-  const handleCreatePost = async (
-    evt: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ) => {
+  const handleCreatePost = async (evt?: React.SyntheticEvent) => {
     evt?.preventDefault();
+    setLoading(true);
     try {
       // 1. First async step: Upload the image file
       const formData = new FormData();
@@ -45,56 +46,88 @@ const NewPost = ({ setPosts, onSuccess }: INewPost) => {
       });
 
       if (postResponse.ok) {
-        const newPostData = await postResponse.json();
+        const newPostData = (await postResponse.json()) as IPostResponse;
         const formattedPost: IPost = {
           ...newPostData,
+          caption: newPostData.caption ?? "",
           timestamp: new Date(newPostData.created_at),
           user: { username: newPostData.username },
           comments: [],
+          likes_count: 0,
+          has_liked: false,
+          view_count: newPostData.view_count || 0,
         };
+
         setPosts((prev) => [formattedPost, ...prev]);
         window.scrollTo(0, 0);
-        setImage(null);
-        setCaption("");
         onSuccess();
       }
     } catch (err) {
       console.error("Upload failed", err);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onKeyDownListener = (evt: any) => {
+    if (evt.key === "Enter") {
+      evt.preventDefault(); // Just in case, stops any bubbling
+      console.log("Key pressed!");
+      if (image && !loading) {
+        console.log("Key pressed! 2");
+        handleCreatePost(evt as any);
+      }
     }
   };
 
   return (
     <Box sx={style}>
-      <div className="post_title">
-        <img
+      <Stack direction="row" sx={{ mb: 3, alignItems: "center" }} spacing={2}>
+        <Box
+          component="img"
           src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/250px-Instagram_logo_2022.svg.png"
           alt="instagram"
+          sx={{ height: 30, width: "auto", display: { xs: "none", sm: "block" } }}
         />
-        <Typography id="modal-modal-title" variant="h6" component="h2">
-          <center>New Post</center>
+        <Typography id="modal-mewPost-title" variant="h5" sx={{ flexGrow: 1, textAlign: "center" }}>
+          New post
         </Typography>
-      </div>
-      <div className="post_body">
+        <Box sx={{ width: { xs: 0, sm: "30px" } }} />
+      </Stack>
+
+      <Stack spacing={2} sx={{ mt: 2 }}>
         <TextField
-          type="text"
+          name="caption"
           placeholder="Enter a caption"
           onChange={(evt) => setCaption(evt.target.value)}
           value={caption}
         />
-        <br />
-        <TextField type="file" id="fileInput" onChange={handleFileData} />
-        <br />
+
+        <Box>
+          <Typography variant="caption" sx={{ display: "block" }} gutterBottom>
+            Select Image:
+          </Typography>
+          <Input
+            type="file"
+            id="fileInput"
+            onChange={handleFileData}
+            onKeyDown={onKeyDownListener}
+          />
+        </Box>
+
         <Button
-          variant="contained"
+          variant="text"
           color="primary"
           type="submit"
+          disabled={!image || loading}
           onClick={handleCreatePost}
         >
-          UPLOAD
+          {loading ? "Uploading..." : "Upload"}
         </Button>
-      </div>
+
+        {error && <Typography color="error">{error}</Typography>}
+      </Stack>
     </Box>
   );
 };
-
-export default NewPost;

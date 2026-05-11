@@ -15,7 +15,6 @@ import {
 import { IPost, Uuid } from "./types";
 import Post from "./MuiPost";
 import Head from "./MuiHead";
-import "../styles/app.css";
 import { useAuth } from "./AuthContext";
 import { AdminUserList } from "./Admin";
 
@@ -97,7 +96,7 @@ function App() {
       elevation: trigger ? 4 : 0, // Adds shadow (elevation 4) when scrolled
       sx: {
         ...children.props.sx,
-        backgroundColor: trigger ? "rgba(156, 144, 144, 0.6)" : "transparent", // Slightly translucent
+        backgroundColor: trigger ? "rgba(114, 99, 99, 0.6)" : "transparent", // Slightly translucent
         backdropFilter: trigger ? "blur(8px)" : "none", // Modern blur effect
         transition: "all 0.3s ease-in-out",
       },

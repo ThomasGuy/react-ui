@@ -37,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const initAuth = async () => {
       // Force a  delay to see the UI Skeleton isLoading
-      // await new Promise((resolve) => setTimeout(resolve, 1400));
+      // await new Promise((resolve) => setTimeout(resolve, 2000));
 
       if (authToken) {
         try {

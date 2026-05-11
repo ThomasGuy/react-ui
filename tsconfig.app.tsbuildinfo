@@ -1,0 +1,19 @@
+{
+    "root": [
+        "./src/main.tsx",
+        "./src/theme.tsx",
+        "./src/vite-env.d.ts",
+        "./src/components/Admin.tsx",
+        "./src/components/App.tsx",
+        "./src/components/AuthContext.tsx",
+        "./src/components/MuiHead.tsx",
+        "./src/components/MuiPost.tsx",
+        "./src/components/types.ts",
+        "./src/components/modals/NewPost.tsx",
+        "./src/components/modals/index.ts",
+        "./src/components/modals/login.tsx",
+        "./src/components/modals/modal_style.ts",
+        "./src/components/modals/signUp.tsx"
+    ],
+    "version": "6.0.3"
+}
