@@ -1,16 +1,30 @@
-import React, { useState } from "react";
-import { Box, Button, Stack, TextField, Typography } from "@mui/material";
+import React, { useState, useRef } from "react";
+import {
+  Box,
+  Button,
+  IconButton,
+  InputAdornment,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 
 import { style } from "./modal_style";
 import { ISuccess } from "../types";
 import { useAuth } from "../AuthContext";
+import { VisibilityOff, Visibility } from "@mui/icons-material";
 
 export const SignUp = ({ onSuccess }: ISuccess) => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [warning, setWarning] = useState("");
   const { authFetch } = useAuth();
+
+  // 1. Create focus references for the input elements
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
 
   const handleSignUp = async (evt: React.SubmitEvent<HTMLFormElement>) => {
     evt?.preventDefault();
@@ -45,6 +59,21 @@ export const SignUp = ({ onSuccess }: ISuccess) => {
     }
   };
 
+  // 2. Intercept Enter key to shift focus instead of submitting early
+  const handleKeyDown = (
+    evt: React.KeyboardEvent<HTMLDivElement>,
+    nextRef: React.RefObject<HTMLInputElement | null>
+  ) => {
+    if (evt.key === "Enter") {
+      evt.preventDefault(); // Stop the form from submitting early
+      nextRef.current?.focus(); // Hop cursor to the next field
+    }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  };
+
   return (
     <Box sx={style}>
       <Stack direction="row" sx={{ mb: 3, alignItems: "center" }} spacing={2}>
@@ -68,20 +97,48 @@ export const SignUp = ({ onSuccess }: ISuccess) => {
             type="text"
             value={username}
             onChange={(evt) => setUsername(evt.target.value)}
+            autoComplete="username" // Helps password managers autofill
+            onKeyDown={(e) => handleKeyDown(e, emailRef)} // Focuses email on Enter
+            slotProps={{ htmlInput: { enterKeyHint: "next" } }}
           />
           <TextField
             name="email"
             placeholder="email"
-            type="text"
+            type="email"
             value={email}
             onChange={(evt) => setEmail(evt.target.value)}
+            autoComplete="email"
+            // Pass the inputRef so emailRef points directly to the native input element
+            inputRef={emailRef}
+            onKeyDown={(e) => handleKeyDown(e, passwordRef)} // Focuses password on Enter
+            slotProps={{ htmlInput: { enterKeyHint: "next" } }}
           />
           <TextField
             name="password"
             placeholder="password"
-            type="password"
+            type={showPassword ? "text" : "password"}
             value={password}
             onChange={(evt) => setPassword(evt.target.value)}
+            autoComplete="new-password"
+            inputRef={passwordRef}
+            slotProps={{
+              htmlInput: { enterKeyHint: "done" },
+              // 3. Inject the interactive eye icon into the trailing side of the input box
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={togglePasswordVisibility}
+                      onMouseDown={(e) => e.preventDefault()} // Prevents field from losing focus on click
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
           />
           <Button
             variant="text"

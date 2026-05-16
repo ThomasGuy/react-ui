@@ -1,13 +1,14 @@
-import { Dispatch, SetStateAction } from "react";
+import React from "react";
 import { AppBarProps } from "@mui/material";
 
 export type Uuid = `${string}-${string}-${string}-${string}-${string}`;
 
-export type ISetPosts = Dispatch<SetStateAction<IPost[]>>;
+export type ISetPosts = React.Dispatch<React.SetStateAction<IPost[]>>;
 
 export interface ISuccess {
   onSuccess: () => void;
 }
+
 export interface HeadProps extends AppBarProps {
   setPosts: ISetPosts;
   view: {
@@ -43,20 +44,19 @@ export interface IComment {
 
 export interface IPost {
   id: Uuid;
-  user_id: Uuid;
+  userId: Uuid;
   caption: string | null;
-  image_url: string;
-  image_url_type: string;
+  sanityAssetId: string;
   timestamp: Date;
   user: { username: string };
   comments: IComment[];
-  likes_count: number;
-  has_liked: boolean;
-  view_count?: number;
+  likesCount: number;
+  hasLiked: boolean;
+  viewCount?: number;
 }
 
 export interface INewPost {
-  setPosts: ISetPosts;
+  setFeedPosts: ISetPosts;
   onSuccess: () => void;
 }
 
@@ -77,13 +77,12 @@ export interface IUserResponse {
 
 export interface IPostResponse {
   id: Uuid;
-  user_id: Uuid;
+  userId: Uuid;
   caption: string | null;
   username: string;
-  image_url: string;
-  image_url_type: string;
-  view_count: number;
-  created_at: string;
-  updated_at: string;
+  sanityAssetId: string;
+  viewCount: number;
+  createdAt: string;
+  updatedAt: string;
   comments: IComment[];
 }

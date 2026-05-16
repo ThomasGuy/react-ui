@@ -1,66 +1,82 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { Box, Button, Input, Stack, TextField, Typography } from "@mui/material";
 
 import { INewPost, IPost, IPostResponse } from "../types";
 import { style } from "./modal_style";
+import { sanityConfig } from "../../utils/sanityImage";
 import { useAuth } from "../AuthContext";
 
-export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
-  const [image, setImage] = useState<File | null>(null);
-  const [caption, setCaption] = useState("");
+export const NewPost = ({ setFeedPosts, onSuccess }: INewPost) => {
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [caption, setCaption] = useState<string | null>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
   const { authFetch } = useAuth();
 
   const handleFileData = (evt: React.ChangeEvent<HTMLInputElement>): void => {
     const imgData = evt.target.files ? evt.target.files[0] : null;
     if (imgData) {
-      setImage(imgData);
+      setImageFile(imgData);
     }
   };
 
   const handleCreatePost = async (evt?: React.SyntheticEvent) => {
     evt?.preventDefault();
     setLoading(true);
+
     try {
-      // 1. First async step: Upload the image file
-      const formData = new FormData();
-      if (image) formData.append("file", image);
-      const imgResponse = await authFetch("post/image", {
-        method: "POST",
-        body: formData, // your Multipart data
-      });
+      // --- PART 1: Direct Binary Upload to Sanity ---
+      const { projectId, dataset } = sanityConfig; // Pulled dynamically from utility import
+      const writeToken = import.meta.env.VITE_SANITY_WRITE_TOKEN;
+      const sanityUploadUrl = `https://${projectId}.api.sanity.io/v2026-05-15/assets/images/${dataset}`;
 
-      if (!imgResponse.ok) throw new Error("Image upload failed");
-      const { filename } = await imgResponse.json();
+      if (imageFile) {
+        const sanityResponse = await fetch(sanityUploadUrl, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${writeToken}`,
+            "Content-Type": imageFile.type, // Guaranteed to be defined here
+          },
+          body: imageFile, // Securely passed as a binary stream
+        });
 
-      // STEP 2: Send the JSON to save the post in Postgres
-      const postResponse = await authFetch(`post/create`, {
-        method: "POST",
-        body: JSON.stringify({
-          image_url: filename,
-          image_url_type: "relative",
-          caption: caption,
-        }),
-      });
+        if (!sanityResponse.ok) throw new Error("Sanity upload handshake failed.");
 
-      if (postResponse.ok) {
-        const newPostData = (await postResponse.json()) as IPostResponse;
-        const formattedPost: IPost = {
-          ...newPostData,
-          caption: newPostData.caption ?? "",
-          timestamp: new Date(newPostData.created_at),
-          user: { username: newPostData.username },
-          comments: [],
-          likes_count: 0,
-          has_liked: false,
-          view_count: newPostData.view_count || 0,
-        };
+        const sanityAssetData = await sanityResponse.json();
+        const sanityAssetId: string = sanityAssetData.document._id;
 
-        setPosts((prev) => [formattedPost, ...prev]);
-        window.scrollTo(0, 0);
-        onSuccess();
+        // --- PART 3: Send Payload to Rust Backend ---
+        const backendResponse = await authFetch("post/create", {
+          method: "POST",
+          body: JSON.stringify({
+            sanityAssetId,
+            caption,
+          }),
+        });
+
+        if (backendResponse.ok) {
+          const newPostData = (await backendResponse.json()) as IPostResponse;
+          const formattedPost: IPost = {
+            ...newPostData,
+            caption: newPostData.caption ?? "",
+            timestamp: new Date(newPostData.createdAt),
+            user: { username: newPostData.username },
+            comments: [],
+            likesCount: 0,
+            hasLiked: false,
+            viewCount: newPostData.viewCount || 0,
+          };
+
+          setFeedPosts((prev) => [formattedPost, ...prev]);
+
+          setImageFile(null);
+          setCaption("");
+          window.scrollTo(0, 0);
+          onSuccess();
+        }
+      } else {
+        setError("Upload aborted: No image file selected.");
       }
     } catch (err) {
       console.error("Upload failed", err);
@@ -70,13 +86,11 @@ export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
     }
   };
 
-  const onKeyDownListener = (evt: any) => {
+  const onKeyDownListener = (evt: React.KeyboardEvent<HTMLInputElement>) => {
     if (evt.key === "Enter") {
       evt.preventDefault(); // Just in case, stops any bubbling
-      console.log("Key pressed!");
-      if (image && !loading) {
-        console.log("Key pressed! 2");
-        handleCreatePost(evt as any);
+      if (imageFile && !loading) {
+        handleCreatePost(evt);
       }
     }
   };
@@ -120,7 +134,7 @@ export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
           variant="text"
           color="primary"
           type="submit"
-          disabled={!image || loading}
+          disabled={!imageFile || loading}
           onClick={handleCreatePost}
         >
           {loading ? "Uploading..." : "Upload"}

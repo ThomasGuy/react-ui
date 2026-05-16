@@ -1,13 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { jwtDecode } from "jwt-decode";
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { IAuthUser } from "./types";
+import { IAuthUser, IUserResponse } from "./types";
 
 interface AuthContextType {
   authToken: string | null;
-  refreshToken: string | null;
   authUsername: string | null;
-  // userId: string | null;
   login: (data: any) => void;
   logout: () => void;
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;
@@ -22,82 +20,122 @@ interface IJwtClaims {
   is_admin: boolean;
 }
 
+interface AuthResponse {
+  authToken: string;
+  authTokenType: string;
+  user: IUserResponse;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [authToken, setAuthToken] = useState(localStorage.getItem("authToken"));
   const [authTokenType, setAuthTokenType] = useState(localStorage.getItem("authTokenType"));
-  const [refreshToken, setRefreshToken] = useState(localStorage.getItem("refreshToken"));
   const [authUsername, setAuthUsername] = useState(localStorage.getItem("username"));
-  const [userId, setUserId] = useState(localStorage.getItem("userId"));
 
   const [user, setUser] = useState<IAuthUser | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true); // Start as true
 
-  useEffect(() => {
-    const initAuth = async () => {
-      // Force a  delay to see the UI Skeleton isLoading
-      // await new Promise((resolve) => setTimeout(resolve, 2000));
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-      if (authToken) {
-        try {
-          const decoded = jwtDecode<IJwtClaims>(authToken);
+  useEffect(() => {
+    const silentRefreshOnBoot = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}user/refresh`, {
+          method: "POST",
+          credentials: "include", // Automatically sends the HttpOnly cookie
+        });
+
+        if (res.ok) {
+          const data: AuthResponse = await res.json();
+
+          // 1. Save token to memory
+          setAuthToken(data.authToken);
+          setAuthUsername(data.user.username);
+
+          // 2. Decode right away to prevent UI flash
+          const decoded = jwtDecode<IJwtClaims>(data.authToken);
           setUser({
             id: decoded.sub,
-            isAdmin: decoded.is_admin, // Matches your Rust Claims struct
-            type: decoded.token_type, // 'Access' or 'Refresh'
+            isAdmin: decoded.is_admin,
+            type: decoded.token_type,
           });
-        } catch (err) {
-          console.error("Token decode failed", err);
+        } else {
           setUser(null);
+          setAuthToken(null);
         }
-      } else {
+      } catch (err) {
+        console.error("Silent refresh failed on boot:", err);
         setUser(null);
+        setAuthToken(null);
+      } finally {
+        setIsLoading(false); // Drop loading skeleton unconditionally
       }
-      setIsLoading(false); // stoploading regardless of outcome
     };
 
-    initAuth();
-  }, [authToken]);
+    silentRefreshOnBoot();
+  }, []); // Empty dependency array ensures this fires EXACTLY once when app mounts
+
+  useEffect(() => {
+    if (!authToken) {
+      setUser(null);
+      return;
+    }
+
+    try {
+      const decoded = jwtDecode<IJwtClaims>(authToken);
+      setUser({
+        id: decoded.sub,
+        isAdmin: decoded.is_admin,
+        type: decoded.token_type,
+      });
+    } catch (err) {
+      console.error("Token decoding failed mid-session:", err);
+      setUser(null);
+      setAuthToken(null);
+    }
+  }, [authToken]); // Runs ONLY when the authToken string actively changes
 
   // Sync state to LocalStorage
   useEffect(() => {
     if (authToken) localStorage.setItem("authToken", authToken);
     else localStorage.removeItem("authToken");
 
-    if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
-    else localStorage.removeItem("refreshToken");
-
     if (authTokenType) localStorage.setItem("authTokenType", authTokenType);
     else localStorage.removeItem("authTokenType");
 
     if (authUsername) localStorage.setItem("authUsername", authUsername);
     else localStorage.removeItem("authUsername");
-
-    if (userId) localStorage.setItem("userId", userId);
-    else localStorage.removeItem("userId");
-  }, [authToken, authTokenType, refreshToken, authUsername, userId]);
+  }, [authToken, authTokenType, authUsername]);
 
   const login = (data: any) => {
     setAuthToken(data.authToken);
     setAuthTokenType(data.authTokenType);
-    setRefreshToken(data.refresh_token);
     setAuthUsername(data.user.username);
-    setUserId(data.user.id);
   };
 
-  const logout = () => {
-    setAuthToken(null);
-    setAuthTokenType(null);
-    setRefreshToken(null);
-    setAuthUsername(null);
-    setUserId(null);
-    localStorage.clear();
+  const logout = async () => {
+    try {
+      // 1. Tell Axum to drop the database row and expire the browser cookie
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}user/logout`, {
+        method: "POST",
+        credentials: "include", // MANDATORY: Sends cookie to server, receives the eviction notice
+      });
+    } catch (err) {
+      console.error("Server logout synchronization failed:", err);
+    } finally {
+      setAuthToken(null);
+      setUser(null);
+      setAuthTokenType(null);
+      setAuthUsername(null);
+      localStorage.clear();
+    }
   };
 
   const authFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
-    const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     const isFormData = options.body instanceof FormData;
+
+    options.credentials = "include";
 
     // Initialize from existing options.headers if any
     const newHeaders = new Headers(options.headers);
@@ -122,19 +160,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     // 2. Handle 401 Unauthorized (Token Expired)
-    if (response.status === 401 && refreshToken) {
+    if (response.status === 401) {
       const refreshResponse = await fetch(`${BASE_URL}user/refresh`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh_token: refreshToken }),
+        credentials: "include",
       });
 
       if (refreshResponse.ok) {
-        const data = await refreshResponse.json();
+        const data: AuthResponse = await refreshResponse.json();
 
         // 3. Update State (Rotation!)
         setAuthToken(data.authToken);
-        setRefreshToken(data.refresh_token);
+        setAuthUsername(data.user.username);
 
         // 4. Retry the original request with the new token
         return fetch(`${BASE_URL}${endpoint}`, {
@@ -157,9 +194,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider
       value={{
         authToken,
-        refreshToken,
         authUsername,
-        // userId,
         login,
         logout,
         authFetch,

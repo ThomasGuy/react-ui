@@ -24,8 +24,7 @@ import {
 
 import { PostProps } from "./types";
 import { useAuth } from "./AuthContext";
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { getInstagramTallUrl } from "@/utils/sanityImage";
 
 const Post = (props: PostProps) => {
   const { post, setPosts, setView, onDeleteRequest } = props;
@@ -33,8 +32,10 @@ const Post = (props: PostProps) => {
   const [isLiking, setIsLiking] = useState(false);
   const { user, authFetch, authUsername } = useAuth();
 
-  const handlePostComment = async (evt: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    evt.preventDefault();
+  const absoluteImageUrl = getInstagramTallUrl(post.sanityAssetId);
+
+  const handlePostComment = async (evt?: React.SyntheticEvent) => {
+    evt?.preventDefault();
 
     const response = await authFetch("/post/comment", {
       method: "POST",
@@ -79,8 +80,8 @@ const Post = (props: PostProps) => {
             if (p.id === post.id) {
               return {
                 ...p,
-                has_liked: data.status === "liked",
-                likes_count: data.status === "liked" ? p.likes_count + 1 : p.likes_count - 1,
+                hasLiked: data.status === "liked",
+                likesCount: data.status === "liked" ? p.likesCount + 1 : p.likesCount - 1,
               };
             }
             return p;
@@ -157,7 +158,7 @@ const Post = (props: PostProps) => {
       <CardMedia
         component="img"
         height="400"
-        image={`${BASE_URL}images/${post.image_url}`}
+        image={absoluteImageUrl}
         alt="Post content"
         sx={{ objectFit: "cover" }}
       />
@@ -167,10 +168,10 @@ const Post = (props: PostProps) => {
         {/* This pushes the comment icons to the right */}
         <Box sx={{ flexGrow: 1 }} />
         <IconButton aria-label="like" onClick={handleLike}>
-          {post.has_liked ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
+          {post.hasLiked ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
         </IconButton>
         <Typography variant="body2" sx={{ mr: 2 }}>
-          {post.likes_count}
+          {post.likesCount}
         </Typography>
 
         <IconButton aria-label="comment">
@@ -213,29 +214,33 @@ const Post = (props: PostProps) => {
       </CardContent>
 
       {/* {create comment} */}
-      <CardContent sx={{ py: 0, mt: 1 }}>
-        <Stack direction="row" spacing={1} sx={{ width: "100%" }}>
-          <TextField
-            fullWidth
-            size="small"
-            variant="outlined"
-            placeholder="new comment"
-            value={newComment}
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-              setNewComment(event.target.value);
-            }}
-          />
-          <Button
-            sx={{ whiteSpace: "nowrap" }}
-            size="small"
-            type="submit"
-            disabled={!newComment}
-            onClick={handlePostComment}
-          >
-            <Send sx={{ color: "lightblue" }} />
-          </Button>
-        </Stack>
-      </CardContent>
+      <form onSubmit={handlePostComment}>
+        <CardContent sx={{ py: 0, mt: 1 }}>
+          <Stack direction="row" spacing={1} sx={{ width: "100%" }}>
+            <TextField
+              fullWidth
+              size="small"
+              variant="outlined"
+              placeholder="new comment"
+              value={newComment}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                setNewComment(event.target.value);
+              }}
+              // Visual hints for mobile keyboards
+              slotProps={{
+                htmlInput: {
+                  // Changes the mobile keyboard button text to "Send"
+                  enterKeyHint: "send",
+                  autoCapitalize: "sentences",
+                },
+              }}
+            />
+            <Button sx={{ whiteSpace: "nowrap" }} size="small" type="submit" disabled={!newComment}>
+              <Send sx={{ color: "lightblue" }} />
+            </Button>
+          </Stack>
+        </CardContent>
+      </form>
     </Card>
   );
 };

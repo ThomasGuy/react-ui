@@ -1,15 +1,41 @@
-import React, { useState } from "react";
-import { Box, Button, Stack, TextField, Typography } from "@mui/material";
+import React, { useRef, useState } from "react";
+import {
+  Box,
+  Button,
+  IconButton,
+  InputAdornment,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 
 import { ISuccess } from "../types";
 import { style } from "./modal_style";
 import { useAuth } from "../AuthContext";
+import { VisibilityOff, Visibility } from "@mui/icons-material";
 
 export const Login = ({ onSuccess }: ISuccess) => {
   const [username, setLoginName] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [warning, setWarning] = useState("");
   const { authFetch, login } = useAuth();
+
+  const passwordRef = useRef<HTMLInputElement>(null);
+
+  const handleKeyDown = (
+    evt: React.KeyboardEvent<HTMLDivElement>,
+    nextRef: React.RefObject<HTMLInputElement | null>
+  ) => {
+    if (evt.key === "Enter") {
+      evt.preventDefault(); // Stop the form from submitting early
+      nextRef.current?.focus(); // Hop cursor to the next field
+    }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  };
 
   const handleLogin = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e?.preventDefault();
@@ -60,16 +86,36 @@ export const Login = ({ onSuccess }: ISuccess) => {
             placeholder="username"
             type="text"
             value={username}
-            autoComplete="username"
             onChange={(evt) => setLoginName(evt.target.value)}
+            autoComplete="username"
+            onKeyDown={(e) => handleKeyDown(e, passwordRef)}
+            slotProps={{ htmlInput: { enterKeyHint: "next" } }}
           />
           <TextField
             name="password"
             placeholder="password"
-            type="password"
-            autoComplete="current-password"
+            type={showPassword ? "text" : "password"}
             value={password}
             onChange={(evt) => setPassword(evt.target.value)}
+            autoComplete="current-password"
+            inputRef={passwordRef}
+            slotProps={{
+              htmlInput: { enterKeyHint: "done" },
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={togglePasswordVisibility}
+                      onMouseDown={(e) => e.preventDefault()}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
           />
           <Button variant="text" color="primary" type="submit" disabled={!password || !username}>
             SUBMIT

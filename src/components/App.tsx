@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect, cloneElement, ReactElement } from "react";
+import { useState, useEffect, cloneElement, ReactElement, useCallback } from "react";
 import {
   Container,
   Dialog,
@@ -10,6 +10,8 @@ import {
   Button,
   useScrollTrigger,
   Grid,
+  Box,
+  CircularProgress,
 } from "@mui/material";
 
 import { IPost, Uuid } from "./types";
@@ -17,35 +19,83 @@ import Post from "./MuiPost";
 import Head from "./MuiHead";
 import { useAuth } from "./AuthContext";
 import { AdminUserList } from "./Admin";
+import { ProfileGrid } from "./ProfileGrid";
+import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 
 function App() {
-  const [posts, setPosts] = useState<IPost[]>([]);
+  const [feedPosts, setFeedPosts] = useState<IPost[]>([]);
+  const [profilePosts, setProfilePosts] = useState<IPost[]>([]);
+  const [loading, setLoading] = useState(false);
   const [view, setView] = useState<{
     type: "feed" | "profile" | "admin_users";
     username?: string;
   }>({ type: "feed" });
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState<Uuid | null>(null);
+
+  // Separate tracking checks to monitor if the database has run dry for a view
+  const [feedHasMore, setFeedHasMore] = useState(true);
+  const [profileHasMore, setProfileHasMore] = useState(true);
+
   const { authFetch, user, authUsername } = useAuth();
 
-  useEffect(() => {
-    if (view.type === "admin_users" || (view.type === "profile" && !view.username)) return;
+  // --- PAGINATION LOADER ENGINE ---
+  const fetchMoreData = useCallback(async () => {
+    if (loading) return;
 
-    const endpoint = view.type === "profile" ? `post/user/${view.username}` : "post/all"; // all_posts route
+    const isProfile = view.type === "profile";
+    const currentOffset = isProfile ? profilePosts.length : feedPosts.length;
+    const endpoint = isProfile
+      ? `post/user/${view.username}?offset=${currentOffset}`
+      : `post/all?offset=${currentOffset}`;
 
-    authFetch(endpoint)
-      .then((res) => (res.ok ? res.json() : Promise.reject(res)))
-      .then((data) => {
-        // console.log("Raw Post date: ", data);
+    setLoading(true);
+
+    try {
+      const res = await authFetch(endpoint);
+      if (res.ok) {
+        const data = await res.json();
+
         const formatted: IPost[] = data.map((post: any) => ({
           ...post,
-          timestamp: new Date(post.timestamp),
+          timestamp: new Date(post.createdAt),
           user: { username: post.user.username },
+          comments: post.comments || [],
+          likesCount: post.likesCount || 0,
+          hasLiked: post.hasLiked || false,
         }));
-        setPosts(formatted);
-      })
-      .catch((err) => console.error("Fetch error view:", err));
-  }, [view, authFetch]); // Re-fetch whenever the view changes
+
+        if (isProfile) {
+          setProfilePosts((prev) => [...prev, ...formatted]);
+          // If the backend returns fewer items than your limit (60), we've hit the bottom
+          if (formatted.length < 60) setProfileHasMore(false);
+        } else {
+          setFeedPosts((prev) => [...prev, ...formatted]);
+          // If backend returns fewer items than the feed limit (20), stop pagination
+          if (formatted.length < 20) setFeedHasMore(false);
+        }
+      }
+    } catch (err) {
+      console.error("Pagination error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [view, feedPosts.length, profilePosts.length, loading, authFetch]);
+
+  // Reset pagination flags whenever the target view switches
+  useEffect(() => {
+    setFeedHasMore(true);
+    setProfileHasMore(true);
+    // Initial page-one data fetch
+    fetchMoreData();
+  }, [fetchMoreData, view.type, view.username]);
+
+  // Bind the infinite scroll boundary anchor
+  const bottomRef = useInfiniteScroll({
+    loading,
+    onLoadMore: fetchMoreData,
+    hasMore: view.type === "profile" ? profileHasMore : feedHasMore,
+  });
 
   const handleDeleteClick = (id: Uuid, username: string) => {
     if (user && authUsername == username) {
@@ -73,7 +123,7 @@ function App() {
         alert("Unauthorized -- not your post --");
       } else if (response.ok) {
         // 1. Instantly remove the post from the UI
-        setPosts((prevPosts) => prevPosts.filter((p) => p.id !== selectedPostId));
+        setFeedPosts((prevPosts) => prevPosts.filter((p) => p.id !== selectedPostId));
       }
       handleDialogClose();
     }
@@ -107,55 +157,81 @@ function App() {
   const renderContent = () => {
     switch (view.type) {
       case "admin_users":
-        return user?.isAdmin ? <AdminUserList /> : <div>Access Denied</div>;
-
+        return (
+          <Grid size={12}>{user?.isAdmin ? <AdminUserList /> : <div>Access Denied</div>}</Grid>
+        );
       case "profile":
-      case "feed":
-      default:
-        return posts.map((post) => (
-          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post.id}>
-            <Post
-              key={post.id}
-              post={post}
-              setPosts={setPosts}
-              setView={setView}
-              onDeleteRequest={handleDeleteClick}
-            />
+        return (
+          <Grid size={12}>
+            <ProfileGrid posts={profilePosts} />
+            {/* Target sentinel element tracking node */}
+            <div ref={bottomRef} style={{ height: "10px", width: "100%" }} />
+            {loading && (
+              <Box sx={{ display: "flex", justifyContent: "center", my: 2 }}>
+                <CircularProgress size={24} />
+              </Box>
+            )}
           </Grid>
-        ));
+        );
+      case "feed":
+        return (
+          <>
+            {feedPosts.map((post) => (
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post.id}>
+                <Post
+                  post={post}
+                  setPosts={setFeedPosts}
+                  setView={setView}
+                  onDeleteRequest={handleDeleteClick}
+                />
+              </Grid>
+            ))}
+            {/* Target sentinel element tracking node */}
+            <Grid size={12} ref={bottomRef} style={{ minHeight: "10px" }}>
+              {loading && (
+                <Box sx={{ display: "flex", justifyContent: "center", my: 2 }}>
+                  <CircularProgress size={30} />
+                </Box>
+              )}
+            </Grid>
+          </>
+        );
+      default:
+        return null;
     }
   };
 
   return (
     <>
       <ElevationScroll>
-        <Head setPosts={setPosts} view={view} setView={setView} />
+        <Head setPosts={setFeedPosts} view={view} setView={setView} />
       </ElevationScroll>
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Grid container spacing={3}>
           {renderContent()}
-
-          <Dialog
-            open={openDialog}
-            onClose={handleDialogClose}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-          >
-            <DialogTitle id="alert-dialog-title">{"Delete Post?"}</DialogTitle>
-            <DialogContent>
-              <DialogContentText id="alert-dialog-description">
-                Are you sure you want to delete this post? This action cannot be undone.
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions sx={{ p: 2 }}>
-              <Button onClick={handleDialogClose}>Cancel</Button>
-              <Button onClick={handleConfirmDelete} color="error" variant="contained" autoFocus>
-                Delete
-              </Button>
-            </DialogActions>
-          </Dialog>
         </Grid>
       </Container>
+
+      {/* Persistent Overlay Dialog Boxes */}
+      <Dialog
+        open={openDialog}
+        onClose={handleDialogClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Delete Post?"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete this post? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={handleDialogClose}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="contained" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
