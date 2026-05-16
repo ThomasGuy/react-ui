@@ -10,7 +10,7 @@ export interface ISuccess {
 }
 
 export interface HeadProps extends AppBarProps {
-  setPosts: ISetPosts;
+  setFeedPosts: ISetPosts;
   view: {
     type: "feed" | "profile" | "admin_users";
     username?: string;
@@ -25,7 +25,7 @@ export interface HeadProps extends AppBarProps {
 
 export interface PostProps {
   post: IPost;
-  setPosts: ISetPosts;
+  setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
   setView: React.Dispatch<
     React.SetStateAction<{
       type: "feed" | "profile" | "admin_users";
@@ -56,7 +56,7 @@ export interface IPost {
 }
 
 export interface INewPost {
-  setFeedPosts: ISetPosts;
+  setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
   onSuccess: () => void;
 }
 

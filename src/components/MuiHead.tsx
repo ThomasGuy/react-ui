@@ -16,7 +16,7 @@ import { Login, SignUp, NewPost } from "./modals";
 import { useAuth } from "./AuthContext";
 
 const Head = (props: HeadProps) => {
-  const { setPosts, view, setView, ...appBarProps } = props;
+  const { setFeedPosts, view, setView, ...appBarProps } = props;
   const [loginOpen, setLoginOpen] = useState(false);
   const [openSignUp, setOpenSignUp] = useState(false);
   const [newPostOpen, setNewPostOpen] = useState(false);
@@ -49,7 +49,7 @@ const Head = (props: HeadProps) => {
           </Modal>
 
           <Modal open={newPostOpen} onClose={() => setNewPostOpen(false)}>
-            <NewPost setPosts={setPosts} onSuccess={() => setNewPostOpen(false)} />
+            <NewPost setPosts={setFeedPosts} onSuccess={() => setNewPostOpen(false)} />
           </Modal>
 
           <Grid container sx={{ alignItems: "center", width: "100%" }} spacing={1}>

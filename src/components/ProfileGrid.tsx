@@ -4,11 +4,12 @@ import { IPost } from "./types";
 import { getInstagramTallUrl } from "../utils/sanityImage";
 
 interface ProfileGridProps {
-  posts: IPost[];
+  profilePosts: IPost[];
+  onPostClick: (post: IPost) => void;
 }
 
-export const ProfileGrid = ({ posts }: ProfileGridProps) => {
-  if (posts.length === 0) {
+export const ProfileGrid = ({ profilePosts, onPostClick }: ProfileGridProps) => {
+  if (profilePosts.length === 0) {
     return (
       <Typography variant="body1" color="text.secondary" sx={{ textAlign: "center", mt: 8 }}>
         No posts yet
@@ -29,13 +30,14 @@ export const ProfileGrid = ({ posts }: ProfileGridProps) => {
         px: { xs: 0, sm: 2 },
       }}
     >
-      {posts.map((post) => {
+      {profilePosts.map((post) => {
         // Compute the absolute 3:4 optimization CDN url locally for each grid box item
         const gridImageUrl = getInstagramTallUrl(post.sanityAssetId);
 
         return (
           <Box
             key={post.id}
+            onClick={() => onPostClick(post)}
             sx={{
               position: "relative",
               width: "100%",
@@ -76,7 +78,6 @@ export const ProfileGrid = ({ posts }: ProfileGridProps) => {
                 width: "100%",
                 height: "100%",
                 bgcolor: "rgba(0, 0, 0, 0.3)", // Dim background tint filter layout
-                // display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 color: "white",

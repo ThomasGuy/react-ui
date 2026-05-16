@@ -6,7 +6,7 @@ import { style } from "./modal_style";
 import { sanityConfig } from "../../utils/sanityImage";
 import { useAuth } from "../AuthContext";
 
-export const NewPost = ({ setFeedPosts, onSuccess }: INewPost) => {
+export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [caption, setCaption] = useState<string | null>("");
   const [loading, setLoading] = useState(false);
@@ -68,7 +68,7 @@ export const NewPost = ({ setFeedPosts, onSuccess }: INewPost) => {
             viewCount: newPostData.viewCount || 0,
           };
 
-          setFeedPosts((prev) => [formattedPost, ...prev]);
+          setPosts((prev) => [formattedPost, ...prev]);
 
           setImageFile(null);
           setCaption("");

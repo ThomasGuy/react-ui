@@ -22,7 +22,7 @@ import {
   Send,
 } from "@mui/icons-material";
 
-import { PostProps } from "./types";
+import { PostProps, IPost } from "./types";
 import { useAuth } from "./AuthContext";
 import { getInstagramTallUrl } from "@/utils/sanityImage";
 
@@ -48,7 +48,7 @@ const Post = (props: PostProps) => {
     if (response.ok) {
       const createdComment = await response.json();
 
-      setPosts((prevPosts) =>
+      setPosts((prevPosts: IPost[]) =>
         prevPosts.map((p) =>
           p.id === post.id ? { ...p, comments: [...p.comments, createdComment] } : p
         )
@@ -75,7 +75,7 @@ const Post = (props: PostProps) => {
         const data = await res.json(); // Returns { status: "liked" } or "unliked"
 
         // Update the local state so the 0 flips to 1 immediately
-        setPosts((prev) =>
+        setPosts((prev: IPost[]) =>
           prev.map((p) => {
             if (p.id === post.id) {
               return {
