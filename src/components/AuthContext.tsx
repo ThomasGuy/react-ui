@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { jwtDecode } from "jwt-decode";
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { IAuthUser, IUserResponse } from "./types";
 
 interface AuthContextType {
@@ -29,31 +29,48 @@ interface AuthResponse {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [authToken, setAuthToken] = useState(localStorage.getItem("authToken"));
-  const [authTokenType, setAuthTokenType] = useState(localStorage.getItem("authTokenType"));
-  const [authUsername, setAuthUsername] = useState(localStorage.getItem("username"));
-
+  // All auth states are now strictly in memory
+  const [authToken, setAuthToken] = useState<string | null>(null);
+  const [authTokenType, setAuthTokenType] = useState<string | null>(null);
+  const [authUsername, setAuthUsername] = useState<string | null>(null);
   const [user, setUser] = useState<IAuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Start as true
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Refs to handle request queueing during concurrent background token refreshes
+  const isRefreshingRef = useRef<boolean>(false);
+  const refreshSubscribersRef = useRef<((token: string, type: string) => void)[]>([]);
 
   const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+  // Process queued-up requests once token rotation succeeds
+  const onTokenRefreshed = (newToken: string, newType: string) => {
+    refreshSubscribersRef.current.forEach((callback) => callback(newToken, newType));
+    refreshSubscribersRef.current = [];
+  };
+
+  // Helper to cleanly wipe in-memory auth states
+  const clearAuthSession = () => {
+    setAuthToken(null);
+    setAuthTokenType(null);
+    setAuthUsername(null);
+    setUser(null);
+  };
+
+  // Execute Silent Refresh ON BOOT - Single source of truth check
   useEffect(() => {
     const silentRefreshOnBoot = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}user/refresh`, {
+        const res = await fetch(`${BASE_URL}user/refresh`, {
           method: "POST",
-          credentials: "include", // Automatically sends the HttpOnly cookie
+          credentials: "include", // Essential for cookie transmission
         });
 
         if (res.ok) {
           const data: AuthResponse = await res.json();
-
-          // 1. Save token to memory
           setAuthToken(data.authToken);
+          setAuthTokenType(data.authTokenType);
           setAuthUsername(data.user.username);
 
-          // 2. Decode right away to prevent UI flash
           const decoded = jwtDecode<IJwtClaims>(data.authToken);
           setUser({
             id: decoded.sub,
@@ -61,130 +78,107 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             type: decoded.token_type,
           });
         } else {
-          setUser(null);
-          setAuthToken(null);
+          clearAuthSession(); // Graceful public fallback
         }
       } catch (err) {
         console.error("Silent refresh failed on boot:", err);
-        setUser(null);
-        setAuthToken(null);
+        clearAuthSession();
       } finally {
-        setIsLoading(false); // Drop loading skeleton unconditionally
+        setIsLoading(false); // Unconditionally drop UI skeleton
       }
     };
 
     silentRefreshOnBoot();
-  }, []); // Empty dependency array ensures this fires EXACTLY once when app mounts
-
-  useEffect(() => {
-    if (!authToken) {
-      setUser(null);
-      return;
-    }
-
-    try {
-      const decoded = jwtDecode<IJwtClaims>(authToken);
-      setUser({
-        id: decoded.sub,
-        isAdmin: decoded.is_admin,
-        type: decoded.token_type,
-      });
-    } catch (err) {
-      console.error("Token decoding failed mid-session:", err);
-      setUser(null);
-      setAuthToken(null);
-    }
-  }, [authToken]); // Runs ONLY when the authToken string actively changes
-
-  // Sync state to LocalStorage
-  useEffect(() => {
-    if (authToken) localStorage.setItem("authToken", authToken);
-    else localStorage.removeItem("authToken");
-
-    if (authTokenType) localStorage.setItem("authTokenType", authTokenType);
-    else localStorage.removeItem("authTokenType");
-
-    if (authUsername) localStorage.setItem("authUsername", authUsername);
-    else localStorage.removeItem("authUsername");
-  }, [authToken, authTokenType, authUsername]);
+  }, [BASE_URL]);
 
   const login = (data: any) => {
     setAuthToken(data.authToken);
     setAuthTokenType(data.authTokenType);
     setAuthUsername(data.user.username);
+
+    const decoded = jwtDecode<IJwtClaims>(data.authToken);
+    setUser({
+      id: decoded.sub,
+      isAdmin: decoded.is_admin,
+      type: decoded.token_type,
+    });
   };
 
   const logout = async () => {
     try {
-      // 1. Tell Axum to drop the database row and expire the browser cookie
-      await fetch(`${import.meta.env.VITE_API_BASE_URL}user/logout`, {
+      await fetch(`${BASE_URL}user/logout`, {
         method: "POST",
-        credentials: "include", // MANDATORY: Sends cookie to server, receives the eviction notice
+        credentials: "include", // Tells Axum to drop database session row & expire cookie
       });
     } catch (err) {
       console.error("Server logout synchronization failed:", err);
     } finally {
-      setAuthToken(null);
-      setUser(null);
-      setAuthTokenType(null);
-      setAuthUsername(null);
-      localStorage.clear();
+      clearAuthSession();
     }
   };
 
   const authFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
-    const isFormData = options.body instanceof FormData;
-
     options.credentials = "include";
-
-    // Initialize from existing options.headers if any
+    const isFormData = options.body instanceof FormData;
     const newHeaders = new Headers(options.headers);
 
-    if (authToken) newHeaders.set("Authorization", `${authTokenType} ${authToken}`);
+    // Dynamic current token snapshot check
+    if (authToken && authTokenType) {
+      newHeaders.set("Authorization", `${authTokenType} ${authToken}`);
+    }
 
     if (isFormData) {
-      // CRITICAL: You must NOT have a 'Content-Type' header here.
-      // If it was accidentally set by a previous operation, remove it.
-      newHeaders.delete("Content-Type");
+      newHeaders.delete("Content-Type"); // Let browser inject boundary strings
     } else {
-      // Only set JSON for non-file requests
       newHeaders.set("Content-Type", "application/json");
     }
 
-    // 4. Clean URL (preventing double slashes)
     const endpoint = url.startsWith("/") ? url.slice(1) : url;
+    const response = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers: newHeaders });
 
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
-      ...options,
-      headers: newHeaders, // fetch accepts a Headers object
-    });
-
-    // 2. Handle 401 Unauthorized (Token Expired)
+    // Handle 401 Unauthorized (Access Token Expired)
     if (response.status === 401) {
-      const refreshResponse = await fetch(`${BASE_URL}user/refresh`, {
-        method: "POST",
-        credentials: "include",
-      });
+      if (!isRefreshingRef.current) {
+        isRefreshingRef.current = true;
 
-      if (refreshResponse.ok) {
-        const data: AuthResponse = await refreshResponse.json();
+        try {
+          const refreshResponse = await fetch(`${BASE_URL}user/refresh`, {
+            method: "POST",
+            credentials: "include",
+          });
 
-        // 3. Update State (Rotation!)
-        setAuthToken(data.authToken);
-        setAuthUsername(data.user.username);
+          if (refreshResponse.ok) {
+            const data: AuthResponse = await refreshResponse.json();
 
-        // 4. Retry the original request with the new token
-        return fetch(`${BASE_URL}${endpoint}`, {
-          ...options,
-          headers: {
-            ...newHeaders,
-            Authorization: `${authTokenType} ${data.authToken}`,
-            "Content-Type": "application/json",
-          },
-        });
-      } else {
-        logout(); // Refresh token was invalid/expired
+            // Sync fresh memory states
+            setAuthToken(data.authToken);
+            setAuthUsername(data.user.username);
+            isRefreshingRef.current = false;
+
+            onTokenRefreshed(data.authToken, data.authTokenType);
+
+            // Retry original request
+            newHeaders.set("Authorization", `${data.authTokenType} ${data.authToken}`);
+            return fetch(`${BASE_URL}${endpoint}`, { ...options, headers: newHeaders });
+          } else {
+            isRefreshingRef.current = false;
+            clearAuthSession();
+            return response;
+          }
+        } catch {
+          isRefreshingRef.current = false;
+          clearAuthSession();
+          return response;
+        }
       }
+
+      // Concurrent request interception queueing
+      return new Promise<Response>((resolve) => {
+        refreshSubscribersRef.current.push((newToken: string, newType: string) => {
+          newHeaders.set("Authorization", `${newType} ${newToken}`);
+          resolve(fetch(`${BASE_URL}${endpoint}`, { ...options, headers: newHeaders }));
+        });
+      });
     }
 
     return response;
@@ -192,15 +186,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider
-      value={{
-        authToken,
-        authUsername,
-        login,
-        logout,
-        authFetch,
-        isLoading,
-        user,
-      }}
+      value={{ authToken, authUsername, login, logout, authFetch, isLoading, user }}
     >
       {children}
     </AuthContext.Provider>
