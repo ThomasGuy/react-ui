@@ -25,7 +25,6 @@ export interface HeadProps extends AppBarProps {
 
 export interface PostProps {
   post: IPost;
-  setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
   setView: React.Dispatch<
     React.SetStateAction<{
       type: "feed" | "profile" | "admin_users";
@@ -33,6 +32,8 @@ export interface PostProps {
     }>
   >;
   onDeleteRequest: (id: Uuid, username: string) => void;
+  onLikeRequest: (id: Uuid) => void;
+  onCommentRequest: (e: React.SubmitEvent<HTMLFormElement>, id: Uuid, comment: string) => void;
 }
 
 export interface IComment {

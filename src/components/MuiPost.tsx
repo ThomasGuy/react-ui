@@ -22,81 +22,19 @@ import {
   Send,
 } from "@mui/icons-material";
 
-import { PostProps, IPost } from "./types";
+import { PostProps } from "./types";
 import { useAuth } from "./AuthContext";
 import { getInstagramTallUrl } from "@/utils/sanityImage";
 
 const Post = (props: PostProps) => {
-  const { post, setPosts, setView, onDeleteRequest } = props;
+  const { post, setView, onDeleteRequest, onLikeRequest, onCommentRequest } = props;
   const [newComment, setNewComment] = useState<string | "">("");
-  const [isLiking, setIsLiking] = useState(false);
-  const { user, authFetch, authUsername } = useAuth();
+  const { authUsername } = useAuth();
 
   const absoluteImageUrl = getInstagramTallUrl(post.sanityAssetId);
 
-  const handlePostComment = async (evt?: React.SyntheticEvent) => {
-    evt?.preventDefault();
-
-    const response = await authFetch("/post/comment", {
-      method: "POST",
-      body: JSON.stringify({
-        post_id: post.id,
-        comment: newComment,
-      }),
-    });
-
-    if (response.ok) {
-      const createdComment = await response.json();
-
-      setPosts((prevPosts: IPost[]) =>
-        prevPosts.map((p) =>
-          p.id === post.id ? { ...p, comments: [...p.comments, createdComment] } : p
-        )
-      );
-    }
-    setNewComment("");
-  };
-
-  const handleLike = async (evt: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const profileHnadler = (evt: React.MouseEvent<HTMLDivElement | HTMLSpanElement, MouseEvent>) => {
     evt.preventDefault();
-    if (!user) {
-      alert("Login to like posts!");
-      return;
-    }
-    if (isLiking) return;
-    setIsLiking(true);
-
-    try {
-      const res = await authFetch(`post/like/${post.id}`, {
-        method: "POST",
-      });
-
-      if (res.ok) {
-        const data = await res.json(); // Returns { status: "liked" } or "unliked"
-
-        // Update the local state so the 0 flips to 1 immediately
-        setPosts((prev: IPost[]) =>
-          prev.map((p) => {
-            if (p.id === post.id) {
-              return {
-                ...p,
-                hasLiked: data.status === "liked",
-                likesCount: data.status === "liked" ? p.likesCount + 1 : p.likesCount - 1,
-              };
-            }
-            return p;
-          })
-        );
-      }
-    } catch (err) {
-      console.error("Like failed", err);
-    } finally {
-      // 3. Unlock the door (this runs even if the fetch fails)
-      setIsLiking(false);
-    }
-  };
-
-  const profileHnadler = () => {
     setView({ type: "profile", username: post.user.username });
     window.scrollTo(0, 0);
   };
@@ -107,7 +45,7 @@ const Post = (props: PostProps) => {
       <CardHeader
         avatar={
           <Avatar
-            onClick={() => profileHnadler()}
+            onClick={(e) => profileHnadler(e)}
             sx={{
               bgcolor: "primary.main",
               cursor: "pointer",
@@ -131,7 +69,7 @@ const Post = (props: PostProps) => {
         title={
           <Typography
             variant="subtitle2"
-            onClick={() => profileHnadler()}
+            onClick={(e) => profileHnadler(e)}
             sx={{
               fontWeight: "bold",
               cursor: "pointer",
@@ -167,7 +105,7 @@ const Post = (props: PostProps) => {
       <CardActions disableSpacing sx={{ p: 0 }}>
         {/* This pushes the comment icons to the right */}
         <Box sx={{ flexGrow: 1 }} />
-        <IconButton aria-label="like" onClick={handleLike}>
+        <IconButton aria-label="like" onClick={() => onLikeRequest(post.id)}>
           {post.hasLiked ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
         </IconButton>
         <Typography variant="body2" sx={{ mr: 2 }}>
@@ -214,7 +152,7 @@ const Post = (props: PostProps) => {
       </CardContent>
 
       {/* {create comment} */}
-      <form onSubmit={handlePostComment}>
+      <form onSubmit={(e) => (onCommentRequest(e, post.id, newComment), setNewComment(""))}>
         <CardContent sx={{ py: 0, mt: 1 }}>
           <Stack direction="row" spacing={1} sx={{ width: "100%" }}>
             <TextField

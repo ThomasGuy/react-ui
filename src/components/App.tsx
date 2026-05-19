@@ -33,6 +33,7 @@ function App() {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState<Uuid | null>(null);
   const [selectedProfilePost, setSelectedProfilePost] = useState<IPost | null>(null);
+  const [isLiking, setIsLiking] = useState(false);
 
   // Separate tracking checks to monitor if the database has run dry for a view
   const [feedHasMore, setFeedHasMore] = useState(true);
@@ -99,16 +100,18 @@ function App() {
   useEffect(() => {
     // Always unlock the home feed boundaries when resetting layout views
     setFeedHasMore(true);
+    setProfileHasMore(true);
+
     if (view.type === "profile") {
       setProfilePosts([]);
-      setProfileHasMore(true);
+      // setProfileHasMore(true);
       fetchMoreData(0);
     } else {
-      // If returning home, keep existing posts or reset safely without double-triggering
-      setFeedHasMore(true);
-      fetchMoreData();
+      setFeedPosts([]);
+      // setFeedHasMore(true);
+      fetchMoreData(0);
     }
-  }, [view.type, view.username]);
+  }, [view.type, view.username, user]);
 
   // Bind the infinite scroll boundary anchor
   const bottomRef = useInfiniteScroll({
@@ -118,6 +121,85 @@ function App() {
     postsLength: view.type === "profile" ? profilePosts.length : feedPosts.length,
   });
 
+  // ------------------- Handle Comment CLick ------------------------
+
+  const handlePostCommentClick = async (
+    evt: React.SubmitEvent<HTMLFormElement>,
+    postId: Uuid,
+    comment: string
+  ) => {
+    evt.preventDefault();
+
+    const response = await authFetch("/post/comment", {
+      method: "POST",
+      body: JSON.stringify({
+        postId,
+        comment,
+      }),
+    });
+
+    if (response.ok) {
+      const createdComment = await response.json();
+
+      // 1. Route the dispatcher dynamically based on the active SPA view context
+      const setTargetPostsState = view.type === "profile" ? setProfilePosts : setFeedPosts;
+
+      setTargetPostsState((prevPosts: IPost[]) =>
+        prevPosts.map((p) =>
+          p.id === postId ? { ...p, comments: [createdComment, ...p.comments] } : p
+        )
+      );
+    }
+  };
+
+  //  ------------------- Handle Like Click --------------------------
+
+  const handleLikeClick = async (targetPostId: Uuid) => {
+    if (!user) {
+      alert("Login to like posts!");
+      return;
+    }
+    if (isLiking) return;
+    setIsLiking(true);
+
+    try {
+      const res = await authFetch(`post/like/${targetPostId}`, {
+        method: "POST",
+      });
+
+      if (res.ok) {
+        const data = await res.json(); // Expected response: { status: "liked" | "unliked" }
+        const isLikedResult = data.status === "liked";
+
+        // 1. Route the dispatcher dynamically based on the active SPA view context
+        const setTargetPostsState = view.type === "profile" ? setProfilePosts : setFeedPosts;
+
+        // 2. Perform an atomic update loop using a fresh collection snapshot (p)
+        setTargetPostsState((prev: IPost[]) =>
+          prev.map((p) => {
+            if (p.id !== targetPostId) return p;
+
+            // Always read properties straight out of 'p' (the latest state reference),
+            // never from the historic top-level 'post' variable closure!
+            return {
+              ...p,
+              hasLiked: isLikedResult,
+              likesCount: isLikedResult
+                ? (p.likesCount ?? 0) + 1
+                : Math.max(0, (p.likesCount ?? 1) - 1), // Prevent negative counts safely
+            };
+          })
+        );
+      }
+    } catch (err) {
+      console.error("Like synchronization operation failed:", err);
+    } finally {
+      setIsLiking(false); // Clean execution unlock
+    }
+  };
+
+  //  --------------- Delete Post Block -------------------
+
   const handleDeleteClick = (id: Uuid, username: string) => {
     if (user && authUsername == username) {
       setSelectedPostId(id);
@@ -125,11 +207,6 @@ function App() {
     } else {
       handleDialogClose();
     }
-  };
-
-  const handleDialogClose = () => {
-    setOpenDialog(false);
-    setSelectedPostId(null);
   };
 
   const handleConfirmDelete = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -148,6 +225,11 @@ function App() {
       }
       handleDialogClose();
     }
+  };
+
+  const handleDialogClose = () => {
+    setOpenDialog(false);
+    setSelectedPostId(null);
   };
 
   interface Props {
@@ -218,9 +300,12 @@ function App() {
                   {/* Reuses your existing Post component engine seamlessly */}
                   <Post
                     post={activeModalPost}
-                    setPosts={setProfilePosts} // Targets the profile array for inline likes/comments updates
+                    // newComment={newComment}
+                    // setNewComment={setNewComment}
                     setView={setView}
                     onDeleteRequest={handleDeleteClick}
+                    onLikeRequest={handleLikeClick}
+                    onCommentRequest={handlePostCommentClick}
                   />
                 </Box>
               )}
@@ -236,9 +321,12 @@ function App() {
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post.id}>
                 <Post
                   post={post}
-                  setPosts={setFeedPosts}
+                  // newComment={newComment}
+                  // setNewComment={setNewComment}
                   setView={setView}
                   onDeleteRequest={handleDeleteClick}
+                  onLikeRequest={handleLikeClick}
+                  onCommentRequest={handlePostCommentClick}
                 />
               </Grid>
             ))}

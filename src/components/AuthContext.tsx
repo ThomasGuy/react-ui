@@ -60,7 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const silentRefreshOnBoot = async () => {
       try {
-        const res = await fetch(`${BASE_URL}user/refresh`, {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}user/refresh`, {
           method: "POST",
           credentials: "include", // Essential for cookie transmission
         });
@@ -89,7 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     silentRefreshOnBoot();
-  }, [BASE_URL]);
+  }, []);
 
   const login = (data: any) => {
     setAuthToken(data.authToken);
