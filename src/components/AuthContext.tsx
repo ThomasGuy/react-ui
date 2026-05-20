@@ -117,6 +117,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // -------------- AuthFetch --------------------------
+
   const authFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
     options.credentials = "include";
     const isFormData = options.body instanceof FormData;

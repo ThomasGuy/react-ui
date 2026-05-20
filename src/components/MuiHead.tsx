@@ -34,6 +34,12 @@ const Head = (props: HeadProps) => {
   };
 
   const titleName = `${authUsername}`.charAt(0).toUpperCase() + `${authUsername}`.slice(1);
+  const title =
+    user && view.type === "feed"
+      ? `${titleName}`
+      : user && view.type === "profile"
+        ? `${view.username}'s profile`
+        : "Mui_app";
 
   return (
     <AppBar position="sticky" color="inherit" {...appBarProps}>
@@ -77,7 +83,7 @@ const Head = (props: HeadProps) => {
                   },
                 }}
               >
-                {user ? `${titleName}` : "Mui-App"}
+                {`${title}`}
               </Typography>
             </Grid>
 

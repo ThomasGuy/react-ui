@@ -95,10 +95,14 @@ const Post = (props: PostProps) => {
       {/* Main Image */}
       <CardMedia
         component="img"
-        height="400"
         image={absoluteImageUrl}
         alt="Post content"
-        sx={{ objectFit: "cover" }}
+        sx={{
+          width: "1oo%",
+          aspectRatio: "3 / 4",
+          objectFit: "cover",
+          backgroundColor: "rgb(0, 0, 0, 0.03)",
+        }}
       />
 
       {/* Action Buttons */}

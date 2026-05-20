@@ -79,11 +79,9 @@ function App() {
 
           if (isProfile) {
             setProfilePosts((prev) => (currentOffset === 0 ? formatted : [...prev, ...formatted]));
-            // If the backend returns fewer items than your limit (60), we've hit the bottom
             if (formatted.length < 60) setProfileHasMore(false);
           } else {
             setFeedPosts((prev) => (currentOffset === 0 ? formatted : [...prev, ...formatted]));
-            // If backend returns fewer items than the feed limit (20), stop pagination
             if (formatted.length < 20) setFeedHasMore(false);
           }
         }
@@ -104,11 +102,9 @@ function App() {
 
     if (view.type === "profile") {
       setProfilePosts([]);
-      // setProfileHasMore(true);
       fetchMoreData(0);
     } else {
       setFeedPosts([]);
-      // setFeedHasMore(true);
       fetchMoreData(0);
     }
   }, [view.type, view.username, user]);
@@ -256,7 +252,8 @@ function App() {
     });
   }
 
-  // Helper function to render the "Center Piece" of your app
+  // Helper function to render the "Center Piece"
+
   const renderContent = () => {
     switch (view.type) {
       case "admin_users":
@@ -300,8 +297,6 @@ function App() {
                   {/* Reuses your existing Post component engine seamlessly */}
                   <Post
                     post={activeModalPost}
-                    // newComment={newComment}
-                    // setNewComment={setNewComment}
                     setView={setView}
                     onDeleteRequest={handleDeleteClick}
                     onLikeRequest={handleLikeClick}
@@ -321,8 +316,6 @@ function App() {
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post.id}>
                 <Post
                   post={post}
-                  // newComment={newComment}
-                  // setNewComment={setNewComment}
                   setView={setView}
                   onDeleteRequest={handleDeleteClick}
                   onLikeRequest={handleLikeClick}
