@@ -60,8 +60,8 @@ function App() {
       setLoading(true);
 
       const endpoint = isProfile
-        ? `post/user/${view.username}?offset=${currentOffset}`
-        : `post/all?offset=${currentOffset}`;
+        ? `/post/user/${view.username}?offset=${currentOffset}`
+        : `/post/all?offset=${currentOffset}`;
 
       try {
         const res = await authFetch(endpoint);
@@ -159,7 +159,7 @@ function App() {
     setIsLiking(true);
 
     try {
-      const res = await authFetch(`post/like/${targetPostId}`, {
+      const res = await authFetch(`/post/like/${targetPostId}`, {
         method: "POST",
       });
 
@@ -209,7 +209,7 @@ function App() {
     e.preventDefault();
 
     if (selectedPostId) {
-      const response = await authFetch(`post/delete/${selectedPostId}`, {
+      const response = await authFetch(`/post/delete/${selectedPostId}`, {
         method: "DELETE",
       });
 

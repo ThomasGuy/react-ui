@@ -49,7 +49,7 @@ export const Login = ({ onSuccess }: ISuccess) => {
         method: "POST",
         body: JSON.stringify(loginData),
       };
-      const response = await authFetch(`user/login`, requestOptions);
+      const response = await authFetch(`/user/login`, requestOptions);
 
       if (response.status == 401) {
         setLoginName("");

@@ -60,7 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const silentRefreshOnBoot = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}user/refresh`, {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/refresh`, {
           method: "POST",
           credentials: "include", // Essential for cookie transmission
         });
@@ -106,7 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      await fetch(`${BASE_URL}user/logout`, {
+      await fetch(`${BASE_URL}/user/logout`, {
         method: "POST",
         credentials: "include", // Tells Axum to drop database session row & expire cookie
       });
@@ -135,7 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       newHeaders.set("Content-Type", "application/json");
     }
 
-    const endpoint = url.startsWith("/") ? url.slice(1) : url;
+    const endpoint = url.startsWith("/") ? url : "/" + url;
     const response = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers: newHeaders });
 
     // Handle 401 Unauthorized (Access Token Expired)
@@ -144,7 +144,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isRefreshingRef.current = true;
 
         try {
-          const refreshResponse = await fetch(`${BASE_URL}user/refresh`, {
+          const refreshResponse = await fetch(`${BASE_URL}/user/refresh`, {
             method: "POST",
             credentials: "include",
           });

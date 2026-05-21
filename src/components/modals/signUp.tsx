@@ -42,7 +42,7 @@ export const SignUp = ({ onSuccess }: ISuccess) => {
         body: json_string,
       };
 
-      const response = await authFetch("user/signup", requestOptions);
+      const response = await authFetch("/user/signup", requestOptions);
 
       if (response.status == 409) {
         setEmail("");

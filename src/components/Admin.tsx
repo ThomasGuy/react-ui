@@ -13,7 +13,7 @@ export const AdminUserList = () => {
 
   const loadData = async () => {
     try {
-      const res = await authFetch("admin/users");
+      const res = await authFetch("/admin/users");
       if (res.ok) {
         const data = await res.json();
         // Date conversion on arrival
@@ -46,7 +46,7 @@ export const AdminUserList = () => {
     if (!window.confirm("Are you sure you want to permanently delete this user?")) return;
 
     try {
-      const res = await authFetch(`admin/user/${targetId}`, {
+      const res = await authFetch(`/admin/user/${targetId}`, {
         method: "DELETE",
       });
 

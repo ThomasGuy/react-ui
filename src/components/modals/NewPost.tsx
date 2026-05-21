@@ -47,7 +47,7 @@ export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
         const sanityAssetId: string = sanityAssetData.document._id;
 
         // --- PART 3: Send Payload to Rust Backend ---
-        const backendResponse = await authFetch("post/create", {
+        const backendResponse = await authFetch("/post/create", {
           method: "POST",
           body: JSON.stringify({
             sanityAssetId,
