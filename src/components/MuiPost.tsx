@@ -98,7 +98,7 @@ const Post = (props: PostProps) => {
         image={absoluteImageUrl}
         alt="Post content"
         sx={{
-          width: "1oo%",
+          width: "100%",
           aspectRatio: "3 / 4",
           objectFit: "cover",
           backgroundColor: "rgb(0, 0, 0, 0.03)",

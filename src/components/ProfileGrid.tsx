@@ -18,13 +18,14 @@ export const ProfileGrid = ({ profilePosts, onPostClick }: ProfileGridProps) => 
   }
 
   return (
-    // Explicit modern CSS Grid container mapping standard 3-column rows
+    // Explicit modern CSS Grid container mapping standard 3/4-column rows
     <Box
       sx={{
         display: "grid",
-        gridTemplateColumns: "repeat(3, 1fr)", // Exact 3 equal columns
-        gap: { xs: "3px", sm: "16px" }, // Ultra-thin gaps on mobile, spacious on desktop
+        gridTemplateColumns: { xs: "repeat(3, 1fr)", md: "repeat(4, 1fr)" },
+        gap: { xs: "3px", sm: "12px" }, // Ultra-thin gaps on mobile, spacious on desktop
         width: "100%",
+        height: "100%",
         maxWidth: 935, // Matches real Instagram web max-width grid boundary
         margin: "0 auto",
         px: { xs: 0, sm: 2 },
@@ -41,7 +42,7 @@ export const ProfileGrid = ({ profilePosts, onPostClick }: ProfileGridProps) => 
             sx={{
               position: "relative",
               width: "100%",
-              aspectRatio: "3/4", // Enforces your chosen 3:4 portrait layout boundaries
+              aspectRatio: "3 / 4", // Enforces your chosen 3:4 portrait layout boundaries
               overflow: "hidden",
               bgcolor: "grey.200", // Serves as an instant native fallback backdrop placeholder
               cursor: "pointer",

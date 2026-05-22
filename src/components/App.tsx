@@ -280,20 +280,30 @@ function App() {
             <Dialog
               open={Boolean(selectedProfilePost)} // Open state scales dynamically based on data availability
               onClose={() => setSelectedProfilePost(null)} // Wipes focus to close overlay cleanly
-              maxWidth="sm"
+              // maxWidth="sm"
               fullWidth
               slotProps={{
                 paper: {
                   sx: {
                     borderRadius: 2,
                     overflow: "hidden",
-                    bgcolor: "background.paper",
+                    // bgcolor: "background.paper",
+                    bgcolor: (theme) => `rgba(${theme.palette.background.paper}, 0.3)`,
+                    maxWidth: { xs: "350px", sm: "550px" },
+                    alignItems: "center",
+                    justifyContent: "center",
                   },
                 },
               }}
             >
               {activeModalPost && (
-                <Box sx={{ p: { xs: 1, sm: 2 } }}>
+                <Box
+                  component={DialogContent}
+                  sx={{
+                    p: { xs: 1, sm: 2 },
+                    maxWidth: { xs: "300px", sm: "450px" },
+                  }}
+                >
                   {/* Reuses your existing Post component engine seamlessly */}
                   <Post
                     post={activeModalPost}
@@ -313,7 +323,7 @@ function App() {
         return (
           <>
             {feedPosts.map((post) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post.id}>
+              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={post.id}>
                 <Post
                   post={post}
                   setView={setView}
