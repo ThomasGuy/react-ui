@@ -12,6 +12,7 @@ import {
   Grid,
   Box,
   CircularProgress,
+  Skeleton,
 } from '@mui/material';
 
 import { IPost, Uuid } from './types';
@@ -23,6 +24,7 @@ import { ProfileGrid } from './ProfileGrid';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 
 function App() {
+  const { authFetch, user, authUsername, isLoading } = useAuth();
   const [feedPosts, setFeedPosts] = useState<IPost[]>([]);
   const [profilePosts, setProfilePosts] = useState<IPost[]>([]);
   const [loading, setLoading] = useState(false);
@@ -39,12 +41,11 @@ function App() {
   const [feedHasMore, setFeedHasMore] = useState(true);
   const [profileHasMore, setProfileHasMore] = useState(true);
 
-  const { authFetch, user, authUsername } = useAuth();
-
   // --- PAGINATION LOADER ENGINE ---
   const fetchMoreData = useCallback(
     async (forcedOffset?: number) => {
-      if (loading) return;
+      console.log('fetchmore data is called ...');
+      if (isLoading || loading) return;
 
       const isProfile = view.type === 'profile';
       // If a forcedOffset number is provided, use it. Otherwise, fallback to array lengths.
@@ -91,11 +92,12 @@ function App() {
         setLoading(false);
       }
     },
-    [view, feedPosts.length, profilePosts.length, loading, authFetch],
+    [view, feedPosts.length, profilePosts.length, loading, authFetch, isLoading],
   );
 
   // Reset pagination flags whenever the target view switches
   useEffect(() => {
+    if (isLoading) return;
     // Always unlock the home feed boundaries when resetting layout views
     setFeedHasMore(true);
     setProfileHasMore(true);
@@ -107,7 +109,7 @@ function App() {
       setFeedPosts([]);
       fetchMoreData(0);
     }
-  }, [view.type, view.username, user]);
+  }, [view.type, user, isLoading]);
 
   // Bind the infinite scroll boundary anchor
   const bottomRef = useInfiniteScroll({
@@ -116,6 +118,10 @@ function App() {
     hasMore: view.type === 'profile' ? profileHasMore : feedHasMore,
     postsLength: view.type === 'profile' ? profilePosts.length : feedPosts.length,
   });
+
+  // ---------------- load auth from cookie guard -----------------
+
+  if (isLoading) <Skeleton />;
 
   // ------------------- Handle Comment CLick ------------------------
 

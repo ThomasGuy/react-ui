@@ -47,8 +47,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Execute Silent Refresh ON BOOT - Single source of truth check
   useEffect(() => {
+    console.log('🚀 AUTH CONTEXT BOOT EFFECT TRIGGERED');
     const silentRefreshOnBoot = async () => {
       try {
+        console.log('📡 Sending refresh fetch request...');
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/refresh`, {
           method: 'POST',
           credentials: 'include', // Essential for cookie transmission
