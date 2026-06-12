@@ -1,22 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { jwtDecode } from "jwt-decode";
-import React, { createContext, useContext, useState, useEffect, useRef } from "react";
-import { IAuthUser, IUserResponse } from "./types";
-
-interface AuthContextType {
-  authToken: string | null;
-  authUsername: string | null;
-  login: (data: any) => void;
-  logout: () => void;
-  authFetch: (url: string, options?: RequestInit) => Promise<Response>;
-  isLoading: boolean;
-  user: IAuthUser | null;
-}
+import { jwtDecode } from 'jwt-decode';
+import React, { useState, useEffect, useRef } from 'react';
+import { IAuthUser, IUserResponse } from './types';
+import { AuthContext } from '../context/AuthContext';
 
 interface IJwtClaims {
   sub: string;
   exp: number;
-  token_type: "Access" | "Refresh";
+  token_type: 'Access' | 'Refresh';
   is_admin: boolean;
 }
 
@@ -25,8 +16,6 @@ interface AuthResponse {
   authTokenType: string;
   user: IUserResponse;
 }
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // All auth states are now strictly in memory
@@ -61,8 +50,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const silentRefreshOnBoot = async () => {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/refresh`, {
-          method: "POST",
-          credentials: "include", // Essential for cookie transmission
+          method: 'POST',
+          credentials: 'include', // Essential for cookie transmission
         });
 
         if (res.ok) {
@@ -81,7 +70,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           clearAuthSession(); // Graceful public fallback
         }
       } catch (err) {
-        console.error("Silent refresh failed on boot:", err);
+        console.error('Silent refresh failed on boot:', err);
         clearAuthSession();
       } finally {
         setIsLoading(false); // Unconditionally drop UI skeleton
@@ -107,11 +96,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     try {
       await fetch(`${BASE_URL}/user/logout`, {
-        method: "POST",
-        credentials: "include", // Tells Axum to drop database session row & expire cookie
+        method: 'POST',
+        credentials: 'include', // Tells Axum to drop database session row & expire cookie
       });
     } catch (err) {
-      console.error("Server logout synchronization failed:", err);
+      console.error('Server logout synchronization failed:', err);
     } finally {
       clearAuthSession();
     }
@@ -120,22 +109,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // -------------- AuthFetch --------------------------
 
   const authFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
-    options.credentials = "include";
+    options.credentials = 'include';
     const isFormData = options.body instanceof FormData;
     const newHeaders = new Headers(options.headers);
 
     // Dynamic current token snapshot check
     if (authToken && authTokenType) {
-      newHeaders.set("Authorization", `${authTokenType} ${authToken}`);
+      newHeaders.set('Authorization', `${authTokenType} ${authToken}`);
     }
 
     if (isFormData) {
-      newHeaders.delete("Content-Type"); // Let browser inject boundary strings
+      newHeaders.delete('Content-Type'); // Let browser inject boundary strings
     } else {
-      newHeaders.set("Content-Type", "application/json");
+      newHeaders.set('Content-Type', 'application/json');
     }
 
-    const endpoint = url.startsWith("/") ? url : "/" + url;
+    const endpoint = url.startsWith('/') ? url : '/' + url;
     const response = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers: newHeaders });
 
     // Handle 401 Unauthorized (Access Token Expired)
@@ -145,8 +134,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         try {
           const refreshResponse = await fetch(`${BASE_URL}/user/refresh`, {
-            method: "POST",
-            credentials: "include",
+            method: 'POST',
+            credentials: 'include',
           });
 
           if (refreshResponse.ok) {
@@ -160,7 +149,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             onTokenRefreshed(data.authToken, data.authTokenType);
 
             // Retry original request
-            newHeaders.set("Authorization", `${data.authTokenType} ${data.authToken}`);
+            newHeaders.set('Authorization', `${data.authTokenType} ${data.authToken}`);
             return fetch(`${BASE_URL}${endpoint}`, { ...options, headers: newHeaders });
           } else {
             isRefreshingRef.current = false;
@@ -177,7 +166,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Concurrent request interception queueing
       return new Promise<Response>((resolve) => {
         refreshSubscribersRef.current.push((newToken: string, newType: string) => {
-          newHeaders.set("Authorization", `${newType} ${newToken}`);
+          newHeaders.set('Authorization', `${newType} ${newToken}`);
           resolve(fetch(`${BASE_URL}${endpoint}`, { ...options, headers: newHeaders }));
         });
       });
@@ -193,10 +182,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within AuthProvider");
-  return context;
 };

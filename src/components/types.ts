@@ -1,5 +1,5 @@
-import React from "react";
-import { AppBarProps } from "@mui/material";
+import React from 'react';
+import { AppBarProps } from '@mui/material';
 
 export type Uuid = `${string}-${string}-${string}-${string}-${string}`;
 
@@ -12,12 +12,12 @@ export interface ISuccess {
 export interface HeadProps extends AppBarProps {
   setFeedPosts: ISetPosts;
   view: {
-    type: "feed" | "profile" | "admin_users";
+    type: 'feed' | 'profile' | 'admin_users';
     username?: string;
   };
   setView: React.Dispatch<
     React.SetStateAction<{
-      type: "feed" | "profile" | "admin_users";
+      type: 'feed' | 'profile' | 'admin_users';
       username?: string;
     }>
   >;
@@ -27,7 +27,7 @@ export interface PostProps {
   post: IPost;
   setView: React.Dispatch<
     React.SetStateAction<{
-      type: "feed" | "profile" | "admin_users";
+      type: 'feed' | 'profile' | 'admin_users';
       username?: string;
     }>
   >;
@@ -64,7 +64,7 @@ export interface INewPost {
 export interface IAuthUser {
   id: string; // maps to 'sub'
   isAdmin: boolean;
-  type: "Access" | "Refresh";
+  type: 'Access' | 'Refresh';
 }
 
 export interface IUserResponse {

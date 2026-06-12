@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect, cloneElement, ReactElement, useCallback } from "react";
+import { useState, useEffect, cloneElement, ReactElement, useCallback } from 'react';
 import {
   Container,
   Dialog,
@@ -12,24 +12,24 @@ import {
   Grid,
   Box,
   CircularProgress,
-} from "@mui/material";
+} from '@mui/material';
 
-import { IPost, Uuid } from "./types";
-import Post from "./MuiPost";
-import Head from "./MuiHead";
-import { useAuth } from "./AuthContext";
-import { AdminUserList } from "./Admin";
-import { ProfileGrid } from "./ProfileGrid";
-import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
+import { IPost, Uuid } from './types';
+import Post from './MuiPost';
+import Head from './MuiHead';
+import { useAuth } from '../context/AuthContext';
+import { AdminUserList } from './Admin';
+import { ProfileGrid } from './ProfileGrid';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 
 function App() {
   const [feedPosts, setFeedPosts] = useState<IPost[]>([]);
   const [profilePosts, setProfilePosts] = useState<IPost[]>([]);
   const [loading, setLoading] = useState(false);
   const [view, setView] = useState<{
-    type: "feed" | "profile" | "admin_users";
+    type: 'feed' | 'profile' | 'admin_users';
     username?: string;
-  }>({ type: "feed" });
+  }>({ type: 'feed' });
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState<Uuid | null>(null);
   const [selectedProfilePost, setSelectedProfilePost] = useState<IPost | null>(null);
@@ -46,7 +46,7 @@ function App() {
     async (forcedOffset?: number) => {
       if (loading) return;
 
-      const isProfile = view.type === "profile";
+      const isProfile = view.type === 'profile';
       // If a forcedOffset number is provided, use it. Otherwise, fallback to array lengths.
       const currentOffset =
         forcedOffset !== undefined
@@ -86,12 +86,12 @@ function App() {
           }
         }
       } catch (err) {
-        console.error("Pagination error:", err);
+        console.error('Pagination error:', err);
       } finally {
         setLoading(false);
       }
     },
-    [view, feedPosts.length, profilePosts.length, loading, authFetch]
+    [view, feedPosts.length, profilePosts.length, loading, authFetch],
   );
 
   // Reset pagination flags whenever the target view switches
@@ -100,7 +100,7 @@ function App() {
     setFeedHasMore(true);
     setProfileHasMore(true);
 
-    if (view.type === "profile") {
+    if (view.type === 'profile') {
       setProfilePosts([]);
       fetchMoreData(0);
     } else {
@@ -113,8 +113,8 @@ function App() {
   const bottomRef = useInfiniteScroll({
     loading,
     onLoadMore: fetchMoreData,
-    hasMore: view.type === "profile" ? profileHasMore : feedHasMore,
-    postsLength: view.type === "profile" ? profilePosts.length : feedPosts.length,
+    hasMore: view.type === 'profile' ? profileHasMore : feedHasMore,
+    postsLength: view.type === 'profile' ? profilePosts.length : feedPosts.length,
   });
 
   // ------------------- Handle Comment CLick ------------------------
@@ -122,12 +122,12 @@ function App() {
   const handlePostCommentClick = async (
     evt: React.SubmitEvent<HTMLFormElement>,
     postId: Uuid,
-    comment: string
+    comment: string,
   ) => {
     evt.preventDefault();
 
-    const response = await authFetch("/post/comment", {
-      method: "POST",
+    const response = await authFetch('/post/comment', {
+      method: 'POST',
       body: JSON.stringify({
         postId,
         comment,
@@ -138,12 +138,12 @@ function App() {
       const createdComment = await response.json();
 
       // 1. Route the dispatcher dynamically based on the active SPA view context
-      const setTargetPostsState = view.type === "profile" ? setProfilePosts : setFeedPosts;
+      const setTargetPostsState = view.type === 'profile' ? setProfilePosts : setFeedPosts;
 
       setTargetPostsState((prevPosts: IPost[]) =>
         prevPosts.map((p) =>
-          p.id === postId ? { ...p, comments: [createdComment, ...p.comments] } : p
-        )
+          p.id === postId ? { ...p, comments: [createdComment, ...p.comments] } : p,
+        ),
       );
     }
   };
@@ -152,7 +152,7 @@ function App() {
 
   const handleLikeClick = async (targetPostId: Uuid) => {
     if (!user) {
-      alert("Login to like posts!");
+      alert('Login to like posts!');
       return;
     }
     if (isLiking) return;
@@ -160,15 +160,15 @@ function App() {
 
     try {
       const res = await authFetch(`/post/like/${targetPostId}`, {
-        method: "POST",
+        method: 'POST',
       });
 
       if (res.ok) {
         const data = await res.json(); // Expected response: { status: "liked" | "unliked" }
-        const isLikedResult = data.status === "liked";
+        const isLikedResult = data.status === 'liked';
 
         // 1. Route the dispatcher dynamically based on the active SPA view context
-        const setTargetPostsState = view.type === "profile" ? setProfilePosts : setFeedPosts;
+        const setTargetPostsState = view.type === 'profile' ? setProfilePosts : setFeedPosts;
 
         // 2. Perform an atomic update loop using a fresh collection snapshot (p)
         setTargetPostsState((prev: IPost[]) =>
@@ -184,11 +184,11 @@ function App() {
                 ? (p.likesCount ?? 0) + 1
                 : Math.max(0, (p.likesCount ?? 1) - 1), // Prevent negative counts safely
             };
-          })
+          }),
         );
       }
     } catch (err) {
-      console.error("Like synchronization operation failed:", err);
+      console.error('Like synchronization operation failed:', err);
     } finally {
       setIsLiking(false); // Clean execution unlock
     }
@@ -210,11 +210,11 @@ function App() {
 
     if (selectedPostId) {
       const response = await authFetch(`/post/delete/${selectedPostId}`, {
-        method: "DELETE",
+        method: 'DELETE',
       });
 
       if (response.status == 403) {
-        alert("Unauthorized -- not your post --");
+        alert('Unauthorized -- not your post --');
       } else if (response.ok) {
         // 1. Instantly remove the post from the UI
         setFeedPosts((prevPosts) => prevPosts.filter((p) => p.id !== selectedPostId));
@@ -245,9 +245,9 @@ function App() {
       elevation: trigger ? 4 : 0, // Adds shadow (elevation 4) when scrolled
       sx: {
         ...children.props.sx,
-        backgroundColor: trigger ? "rgba(114, 99, 99, 0.6)" : "transparent", // Slightly translucent
-        backdropFilter: trigger ? "blur(8px)" : "none", // Modern blur effect
-        transition: "all 0.3s ease-in-out",
+        backgroundColor: trigger ? 'rgba(114, 99, 99, 0.6)' : 'transparent', // Slightly translucent
+        backdropFilter: trigger ? 'blur(8px)' : 'none', // Modern blur effect
+        transition: 'all 0.3s ease-in-out',
       },
     });
   }
@@ -256,12 +256,12 @@ function App() {
 
   const renderContent = () => {
     switch (view.type) {
-      case "admin_users":
+      case 'admin_users':
         return (
           <Grid size={12}>{user?.isAdmin ? <AdminUserList /> : <div>Access Denied</div>}</Grid>
         );
 
-      case "profile": {
+      case 'profile': {
         // 1. Locate the dynamic, updated post from your active profile state array cache
         const activeModalPost = profilePosts.find((p) => p.id === selectedProfilePost?.id);
 
@@ -269,9 +269,9 @@ function App() {
           <Grid size={12}>
             <ProfileGrid profilePosts={profilePosts} onPostClick={setSelectedProfilePost} />
             {/* Target sentinel element tracking node */}
-            <div ref={bottomRef} style={{ height: "10px", width: "100%" }} />
+            <div ref={bottomRef} style={{ height: '10px', width: '100%' }} />
             {loading && (
-              <Box sx={{ display: "flex", justifyContent: "center", my: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
                 <CircularProgress size={24} />
               </Box>
             )}
@@ -286,12 +286,12 @@ function App() {
                 paper: {
                   sx: {
                     borderRadius: 2,
-                    overflow: "hidden",
+                    overflow: 'hidden',
                     // bgcolor: "background.paper",
                     bgcolor: (theme) => `rgba(${theme.palette.background.paper}, 0.3)`,
-                    maxWidth: { xs: "350px", sm: "550px" },
-                    alignItems: "center",
-                    justifyContent: "center",
+                    maxWidth: { xs: '350px', sm: '550px' },
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   },
                 },
               }}
@@ -301,7 +301,7 @@ function App() {
                   component={DialogContent}
                   sx={{
                     p: { xs: 1, sm: 2 },
-                    maxWidth: { xs: "300px", sm: "450px" },
+                    maxWidth: { xs: '300px', sm: '450px' },
                   }}
                 >
                   {/* Reuses your existing Post component engine seamlessly */}
@@ -319,7 +319,7 @@ function App() {
         );
       }
 
-      case "feed":
+      case 'feed':
         return (
           <>
             {feedPosts.map((post) => (
@@ -334,9 +334,9 @@ function App() {
               </Grid>
             ))}
             {/* Target sentinel element tracking node */}
-            <Grid size={12} ref={bottomRef} style={{ minHeight: "10px" }}>
+            <Grid size={12} ref={bottomRef} style={{ minHeight: '10px' }}>
               {loading && (
-                <Box sx={{ display: "flex", justifyContent: "center", my: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
                   <CircularProgress size={30} />
                 </Box>
               )}
@@ -367,7 +367,7 @@ function App() {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">{"Delete Post?"}</DialogTitle>
+        <DialogTitle id="alert-dialog-title">{'Delete Post?'}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
             Are you sure you want to delete this post? This action cannot be undone.

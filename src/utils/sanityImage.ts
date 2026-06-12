@@ -1,9 +1,9 @@
-import { createImageUrlBuilder } from "@sanity/image-url";
+import { createImageUrlBuilder } from '@sanity/image-url';
 
 // Mock or import your existing configuration metadata
 export const sanityConfig = {
   projectId: import.meta.env.VITE_SANITY_PROJECT_ID,
-  dataset: import.meta.env.VITE_SANITY_DATASET || "production",
+  dataset: import.meta.env.VITE_SANITY_DATASET || 'production',
 };
 
 // Create the single global engine instance
@@ -21,10 +21,10 @@ export const getInstagramTallUrl = (source: string) => {
       .image(source)
       .width(1080)
       .height(1440)
-      .fit("crop")
+      .fit('crop')
       // Respects the custom focal point bubble set by your user inside the studio
-      .crop("focalpoint")
-      .auto("format")
+      .crop('focalpoint')
+      .auto('format')
       .url()
   );
 };
@@ -34,8 +34,8 @@ export const getInstagramGridThumbnailUrl = (source: string) => {
     .image(source)
     .width(400) // Downscaled footprint: 400px width is perfect resolution for a 3-column matrix split
     .height(533) // Hard mathematical 3:4 target calculation aspect boundary (400 / 0.75)
-    .fit("crop")
-    .crop("focalpoint")
-    .auto("format")
+    .fit('crop')
+    .crop('focalpoint')
+    .auto('format')
     .url();
 };

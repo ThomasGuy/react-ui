@@ -1,5 +1,5 @@
 // import React from "react";
-import { useState } from "react";
+import { useState } from 'react';
 import {
   Card,
   CardHeader,
@@ -13,29 +13,29 @@ import {
   TextField,
   Button,
   Stack,
-} from "@mui/material";
+} from '@mui/material';
 import {
   Favorite as FavoriteIcon,
   FavoriteBorder as FavoriteBorderIcon,
   ChatBubbleOutlined as CommentIcon,
   Delete as DeleteIcon,
   Send,
-} from "@mui/icons-material";
+} from '@mui/icons-material';
 
-import { PostProps } from "./types";
-import { useAuth } from "./AuthContext";
-import { getInstagramTallUrl } from "@/utils/sanityImage";
+import { PostProps } from './types';
+import { useAuth } from '../context/AuthContext';
+import { getInstagramTallUrl } from '@/utils/sanityImage';
 
 const Post = (props: PostProps) => {
   const { post, setView, onDeleteRequest, onLikeRequest, onCommentRequest } = props;
-  const [newComment, setNewComment] = useState<string | "">("");
+  const [newComment, setNewComment] = useState<string | ''>('');
   const { authUsername } = useAuth();
 
   const absoluteImageUrl = getInstagramTallUrl(post.sanityAssetId);
 
   const profileHnadler = (evt: React.MouseEvent<HTMLDivElement | HTMLSpanElement, MouseEvent>) => {
     evt.preventDefault();
-    setView({ type: "profile", username: post.user.username });
+    setView({ type: 'profile', username: post.user.username });
     window.scrollTo(0, 0);
   };
 
@@ -47,9 +47,9 @@ const Post = (props: PostProps) => {
           <Avatar
             onClick={(e) => profileHnadler(e)}
             sx={{
-              bgcolor: "primary.main",
-              cursor: "pointer",
-              "&:hover": { color: "paleturquoise" },
+              bgcolor: 'primary.main',
+              cursor: 'pointer',
+              '&:hover': { color: 'paleturquoise' },
             }}
           >
             {post.user.username[0].toUpperCase()}
@@ -60,7 +60,7 @@ const Post = (props: PostProps) => {
             <IconButton
               aria-label="delete"
               onClick={() => onDeleteRequest(post.id, post.user.username)}
-              sx={{ "&:hover": { color: "error.main" } }}
+              sx={{ '&:hover': { color: 'error.main' } }}
             >
               <DeleteIcon />
             </IconButton>
@@ -71,23 +71,23 @@ const Post = (props: PostProps) => {
             variant="subtitle2"
             onClick={(e) => profileHnadler(e)}
             sx={{
-              fontWeight: "bold",
-              cursor: "pointer",
-              "&:hover": { textDecoration: "underline" },
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              '&:hover': { textDecoration: 'underline' },
             }}
           >
             {post.user.username}
           </Typography>
         }
         subheader={post.timestamp.toLocaleDateString(undefined, {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
         })}
         slotProps={{
           subheader: {
-            variant: "caption",
-            color: "text.secondary", // Optional: ensures it stays subtle
+            variant: 'caption',
+            color: 'text.secondary', // Optional: ensures it stays subtle
           },
         }}
       />
@@ -98,10 +98,10 @@ const Post = (props: PostProps) => {
         image={absoluteImageUrl}
         alt="Post content"
         sx={{
-          width: "100%",
-          aspectRatio: "3 / 4",
-          objectFit: "cover",
-          backgroundColor: "rgb(0, 0, 0, 0.03)",
+          width: '100%',
+          aspectRatio: '3 / 4',
+          objectFit: 'cover',
+          backgroundColor: 'rgb(0, 0, 0, 0.03)',
         }}
       />
 
@@ -128,7 +128,7 @@ const Post = (props: PostProps) => {
       {post.caption && (
         <CardContent sx={{ p: 1 }}>
           <Typography variant="body2" color="text.secondary">
-            <Box component="span" sx={{ fontWeight: "bold", color: "text.primary", mr: 1 }}>
+            <Box component="span" sx={{ fontWeight: 'bold', color: 'text.primary', mr: 1 }}>
               {post.caption}
             </Box>
           </Typography>
@@ -139,15 +139,15 @@ const Post = (props: PostProps) => {
       <CardContent
         sx={{
           py: 0,
-          maxHeight: "6rem",
-          overflowY: "auto",
-          "&::-webkit-scrollbar": { width: "4px" },
-          "&::-webkit-scrollbar-thumb": { backgroundColor: "#ccc", borderRadius: "4px" },
+          maxHeight: '6rem',
+          overflowY: 'auto',
+          '&::-webkit-scrollbar': { width: '4px' },
+          '&::-webkit-scrollbar-thumb': { backgroundColor: '#ccc', borderRadius: '4px' },
         }}
       >
         {post.comments.map((c) => (
           <Typography key={c.id} variant="body2" color="text.secondary">
-            <Box component="span" sx={{ fontWeight: "bold", color: "text.primary", mr: 1 }}>
+            <Box component="span" sx={{ fontWeight: 'bold', color: 'text.primary', mr: 1 }}>
               {c.username}
             </Box>
             {c.comment}
@@ -156,9 +156,9 @@ const Post = (props: PostProps) => {
       </CardContent>
 
       {/* {create comment} */}
-      <form onSubmit={(e) => (onCommentRequest(e, post.id, newComment), setNewComment(""))}>
+      <form onSubmit={(e) => (onCommentRequest(e, post.id, newComment), setNewComment(''))}>
         <CardContent sx={{ py: 0, mt: 1 }}>
-          <Stack direction="row" spacing={1} sx={{ width: "100%" }}>
+          <Stack direction="row" spacing={1} sx={{ width: '100%' }}>
             <TextField
               fullWidth
               size="small"
@@ -172,13 +172,13 @@ const Post = (props: PostProps) => {
               slotProps={{
                 htmlInput: {
                   // Changes the mobile keyboard button text to "Send"
-                  enterKeyHint: "send",
-                  autoCapitalize: "sentences",
+                  enterKeyHint: 'send',
+                  autoCapitalize: 'sentences',
                 },
               }}
             />
-            <Button sx={{ whiteSpace: "nowrap" }} size="small" type="submit" disabled={!newComment}>
-              <Send sx={{ color: "lightblue" }} />
+            <Button sx={{ whiteSpace: 'nowrap' }} size="small" type="submit" disabled={!newComment}>
+              <Send sx={{ color: 'lightblue' }} />
             </Button>
           </Stack>
         </CardContent>

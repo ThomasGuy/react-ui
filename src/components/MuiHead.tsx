@@ -9,11 +9,11 @@ import {
   Box,
   Grid,
   Stack,
-} from "@mui/material";
-import { HeadProps } from "./types";
-import { useState } from "react";
-import { Login, SignUp, NewPost } from "./modals";
-import { useAuth } from "./AuthContext";
+} from '@mui/material';
+import { HeadProps } from './types';
+import { useState } from 'react';
+import { Login, SignUp, NewPost } from './modals';
+import { useAuth } from '../context/AuthContext';
 
 const Head = (props: HeadProps) => {
   const { setFeedPosts, view, setView, ...appBarProps } = props;
@@ -29,17 +29,17 @@ const Head = (props: HeadProps) => {
   }
 
   const backHandler = () => {
-    setView({ type: "feed" });
+    setView({ type: 'feed' });
     window.scrollTo(0, 0);
   };
 
   const titleName = `${authUsername}`.charAt(0).toUpperCase() + `${authUsername}`.slice(1);
   const title =
-    user && view.type === "feed"
+    user && view.type === 'feed'
       ? `${titleName}`
-      : user && view.type === "profile"
+      : user && view.type === 'profile'
         ? `${view.username}'s profile`
-        : "Mui_app";
+        : 'Mui_app';
 
   return (
     <AppBar position="sticky" color="inherit" {...appBarProps}>
@@ -58,13 +58,13 @@ const Head = (props: HeadProps) => {
             <NewPost setPosts={setFeedPosts} onSuccess={() => setNewPostOpen(false)} />
           </Modal>
 
-          <Grid container sx={{ alignItems: "center", width: "100%" }} spacing={1}>
-            <Grid size={{ xs: "auto", sm: 3 }}>
+          <Grid container sx={{ alignItems: 'center', width: '100%' }} spacing={1}>
+            <Grid size={{ xs: 'auto', sm: 3 }}>
               <Box
                 component="img"
                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/250px-Instagram_logo_2022.svg.png"
                 alt="Logo"
-                sx={{ height: 40, width: "auto", display: { xs: "none", sm: "block" } }}
+                sx={{ height: 40, width: 'auto', display: { xs: 'none', sm: 'block' } }}
               />
             </Grid>
 
@@ -73,13 +73,13 @@ const Head = (props: HeadProps) => {
                 variant="h6"
                 noWrap
                 sx={{
-                  fontWeight: "bold",
-                  textAlign: "center",
-                  width: "100%",
-                  display: { xs: "none", sm: "block" },
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                  width: '100%',
+                  display: { xs: 'none', sm: 'block' },
                   fontSize: {
-                    sm: "1.5rem", // roughly h5 size
-                    lg: "2.125rem", // roughly h4 size
+                    sm: '1.5rem', // roughly h5 size
+                    lg: '2.125rem', // roughly h4 size
                   },
                 }}
               >
@@ -87,11 +87,11 @@ const Head = (props: HeadProps) => {
               </Typography>
             </Grid>
 
-            <Grid sx={{ width: { xs: "100%", sm: "auto" } }}>
+            <Grid sx={{ width: { xs: '100%', sm: 'auto' } }}>
               <Stack
                 direction="row"
                 spacing={2}
-                sx={{ justifyContent: { xs: "center", sm: "flex-end" } }}
+                sx={{ justifyContent: { xs: 'center', sm: 'flex-end' } }}
               >
                 {isLoading ? (
                   // 1. Show Pulse Skeletons while checking the JWT
@@ -101,24 +101,24 @@ const Head = (props: HeadProps) => {
                   </>
                 ) : user ? (
                   <>
-                    {view.type === "profile" && (
+                    {view.type === 'profile' && (
                       <Button variant="contained" color="primary" onClick={() => backHandler()}>
                         Back
                       </Button>
                     )}
 
                     {/* Admin Button */}
-                    {user.isAdmin && view.type !== "admin_users" && (
+                    {user.isAdmin && view.type !== 'admin_users' && (
                       <Button
                         variant="contained"
                         color="secondary"
-                        onClick={() => setView({ type: "admin_users" })}
+                        onClick={() => setView({ type: 'admin_users' })}
                       >
                         Admin
                       </Button>
                     )}
 
-                    {view.type === "admin_users" && (
+                    {view.type === 'admin_users' && (
                       <Button variant="contained" color="primary" onClick={() => backHandler()}>
                         Back
                       </Button>
@@ -138,7 +138,7 @@ const Head = (props: HeadProps) => {
                   </>
                 ) : (
                   <>
-                    {view.type === "profile" && (
+                    {view.type === 'profile' && (
                       <Button variant="contained" color="primary" onClick={() => backHandler()}>
                         Back
                       </Button>

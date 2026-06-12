@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
-import { DataGrid, GridColDef, GridActionsCellItem } from "@mui/x-data-grid";
-import { Box, Paper, Typography, Alert } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { useAuth } from "./AuthContext"; // Assuming your AuthContext export
-import { IUserResponse } from "./types"; // Your interface from earlier
+import { useEffect, useState } from 'react';
+import { DataGrid, GridColDef, GridActionsCellItem } from '@mui/x-data-grid';
+import { Box, Paper, Typography, Alert } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { useAuth } from '../context/AuthContext'; // Assuming your AuthContext export
+import { IUserResponse } from './types'; // Your interface from earlier
 
 export const AdminUserList = () => {
   const [rows, setRows] = useState<IUserResponse[]>([]);
@@ -13,7 +13,7 @@ export const AdminUserList = () => {
 
   const loadData = async () => {
     try {
-      const res = await authFetch("/admin/users");
+      const res = await authFetch('/admin/users');
       if (res.ok) {
         const data = await res.json();
         // Date conversion on arrival
@@ -24,11 +24,11 @@ export const AdminUserList = () => {
         }));
         setRows(formatted);
       } else {
-        setError("Failed to fetch users.");
+        setError('Failed to fetch users.');
       }
     } catch (err) {
-      console.error("Fetch error:", err);
-      setError("Network error fetching user list.");
+      console.error('Fetch error:', err);
+      setError('Network error fetching user list.');
     }
   };
 
@@ -39,15 +39,15 @@ export const AdminUserList = () => {
   const handleDelete = async (targetId: string) => {
     // Prevent self-deletion
     if (targetId === currentUser?.id) {
-      alert("You cannot delete your own admin account.");
+      alert('You cannot delete your own admin account.');
       return;
     }
 
-    if (!window.confirm("Are you sure you want to permanently delete this user?")) return;
+    if (!window.confirm('Are you sure you want to permanently delete this user?')) return;
 
     try {
       const res = await authFetch(`/admin/user/${targetId}`, {
-        method: "DELETE",
+        method: 'DELETE',
       });
 
       if (res.ok) {
@@ -58,36 +58,36 @@ export const AdminUserList = () => {
         alert(`Delete failed: ${msg}`);
       }
     } catch (err) {
-      console.error("Delete error:", err);
-      alert("An error occurred while trying to delete the user.");
+      console.error('Delete error:', err);
+      alert('An error occurred while trying to delete the user.');
     }
   };
 
   const columns: GridColDef[] = [
-    { field: "username", headerName: "Username", flex: 1 },
-    { field: "email", headerName: "Email", flex: 1.5 },
+    { field: 'username', headerName: 'Username', flex: 1 },
+    { field: 'email', headerName: 'Email', flex: 1.5 },
     {
-      field: "isAdmin",
-      headerName: "Admin",
-      type: "boolean",
+      field: 'isAdmin',
+      headerName: 'Admin',
+      type: 'boolean',
       width: 100,
     },
     {
-      field: "createdAt",
-      headerName: "Joined",
-      type: "dateTime",
+      field: 'createdAt',
+      headerName: 'Joined',
+      type: 'dateTime',
       width: 180,
     },
     {
-      field: "lastLoginAt",
-      headerName: "Last Seen",
-      type: "dateTime",
+      field: 'lastLoginAt',
+      headerName: 'Last Seen',
+      type: 'dateTime',
       width: 180,
     },
     {
-      field: "actions",
-      type: "actions",
-      headerName: "Actions",
+      field: 'actions',
+      type: 'actions',
+      headerName: 'Actions',
       width: 100,
       getActions: (params) => [
         <GridActionsCellItem
@@ -101,8 +101,8 @@ export const AdminUserList = () => {
   ];
 
   return (
-    <Box sx={{ p: 3, width: "100%", maxWidth: "1200px", mx: "auto" }}>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: "bold" }}>
+    <Box sx={{ p: 3, width: '100%', maxWidth: '1200px', mx: 'auto' }}>
+      <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>
         User Management
       </Typography>
 
@@ -112,7 +112,7 @@ export const AdminUserList = () => {
         </Alert>
       )}
 
-      <Paper sx={{ height: 600, width: "100%" }}>
+      <Paper sx={{ height: 600, width: '100%' }}>
         <DataGrid
           rows={rows}
           columns={columns}

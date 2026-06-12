@@ -1,16 +1,16 @@
-import React, { useState } from "react";
-import { Box, Button, Input, Stack, TextField, Typography } from "@mui/material";
+import React, { useState } from 'react';
+import { Box, Button, Input, Stack, TextField, Typography } from '@mui/material';
 
-import { INewPost, IPost, IPostResponse } from "../types";
-import { style } from "./modal_style";
-import { sanityConfig } from "../../utils/sanityImage";
-import { useAuth } from "../AuthContext";
+import { INewPost, IPost, IPostResponse } from '../types';
+import { style } from './modal_style';
+import { sanityConfig } from '../../utils/sanityImage';
+import { useAuth } from '../../context/AuthContext';
 
 export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [caption, setCaption] = useState<string | null>("");
+  const [caption, setCaption] = useState<string | null>('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   const { authFetch } = useAuth();
 
@@ -33,22 +33,22 @@ export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
 
       if (imageFile) {
         const sanityResponse = await fetch(sanityUploadUrl, {
-          method: "POST",
+          method: 'POST',
           headers: {
             Authorization: `Bearer ${writeToken}`,
-            "Content-Type": imageFile.type, // Guaranteed to be defined here
+            'Content-Type': imageFile.type, // Guaranteed to be defined here
           },
           body: imageFile, // Securely passed as a binary stream
         });
 
-        if (!sanityResponse.ok) throw new Error("Sanity upload handshake failed.");
+        if (!sanityResponse.ok) throw new Error('Sanity upload handshake failed.');
 
         const sanityAssetData = await sanityResponse.json();
         const sanityAssetId: string = sanityAssetData.document._id;
 
         // --- PART 3: Send Payload to Rust Backend ---
-        const backendResponse = await authFetch("/post/create", {
-          method: "POST",
+        const backendResponse = await authFetch('/post/create', {
+          method: 'POST',
           body: JSON.stringify({
             sanityAssetId,
             caption,
@@ -59,7 +59,7 @@ export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
           const newPostData = (await backendResponse.json()) as IPostResponse;
           const formattedPost: IPost = {
             ...newPostData,
-            caption: newPostData.caption ?? "",
+            caption: newPostData.caption ?? '',
             timestamp: new Date(newPostData.createdAt),
             user: { username: newPostData.username },
             comments: [],
@@ -71,23 +71,23 @@ export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
           setPosts((prev) => [formattedPost, ...prev]);
 
           setImageFile(null);
-          setCaption("");
+          setCaption('');
           window.scrollTo(0, 0);
           onSuccess();
         }
       } else {
-        setError("Upload aborted: No image file selected.");
+        setError('Upload aborted: No image file selected.');
       }
     } catch (err) {
-      console.error("Upload failed", err);
-      setError("Something went wrong. Please try again.");
+      console.error('Upload failed', err);
+      setError('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const onKeyDownListener = (evt: React.KeyboardEvent<HTMLInputElement>) => {
-    if (evt.key === "Enter") {
+    if (evt.key === 'Enter') {
       evt.preventDefault(); // Just in case, stops any bubbling
       if (imageFile && !loading) {
         handleCreatePost(evt);
@@ -97,17 +97,17 @@ export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
 
   return (
     <Box sx={style}>
-      <Stack direction="row" sx={{ mb: 3, alignItems: "center" }} spacing={2}>
+      <Stack direction="row" sx={{ mb: 3, alignItems: 'center' }} spacing={2}>
         <Box
           component="img"
           src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/250px-Instagram_logo_2022.svg.png"
           alt="instagram"
-          sx={{ height: 30, width: "auto", display: { xs: "none", sm: "block" } }}
+          sx={{ height: 30, width: 'auto', display: { xs: 'none', sm: 'block' } }}
         />
-        <Typography id="modal-mewPost-title" variant="h5" sx={{ flexGrow: 1, textAlign: "center" }}>
+        <Typography id="modal-mewPost-title" variant="h5" sx={{ flexGrow: 1, textAlign: 'center' }}>
           New post
         </Typography>
-        <Box sx={{ width: { xs: 0, sm: "30px" } }} />
+        <Box sx={{ width: { xs: 0, sm: '30px' } }} />
       </Stack>
 
       <Stack spacing={2} sx={{ mt: 2 }}>
@@ -119,7 +119,7 @@ export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
         />
 
         <Box>
-          <Typography variant="caption" sx={{ display: "block" }} gutterBottom>
+          <Typography variant="caption" sx={{ display: 'block' }} gutterBottom>
             Select Image:
           </Typography>
           <Input
@@ -137,7 +137,7 @@ export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
           disabled={!imageFile || loading}
           onClick={handleCreatePost}
         >
-          {loading ? "Uploading..." : "Upload"}
+          {loading ? 'Uploading...' : 'Upload'}
         </Button>
 
         {error && <Typography color="error">{error}</Typography>}

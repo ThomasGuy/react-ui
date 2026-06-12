@@ -13,6 +13,7 @@ stats.html
 .eslintcache
 
 .env
+.vscode
 
 # TypeScript build cache
 *.tsbuildinfo

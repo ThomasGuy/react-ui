@@ -1,4 +1,4 @@
-import { useRef, useCallback } from "react";
+import { useRef, useCallback } from 'react';
 
 interface UseInfiniteScrollProps {
   loading: boolean;
@@ -38,15 +38,15 @@ export const useInfiniteScroll = ({
         {
           // "200px" tells the browser to trigger onLoadMore when the sentinel
           // element is still 200px below the bottom of the viewport!
-          rootMargin: "200px",
-        }
+          rootMargin: '200px',
+        },
       );
 
       if (node) {
         observerRef.current.observe(node);
       }
     },
-    [loading, hasMore, onLoadMore, postsLength]
+    [loading, hasMore, onLoadMore, postsLength],
   );
 
   return bottomBoundaryRef;

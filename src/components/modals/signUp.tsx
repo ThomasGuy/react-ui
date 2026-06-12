@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef } from 'react';
 import {
   Box,
   Button,
@@ -7,19 +7,19 @@ import {
   Stack,
   TextField,
   Typography,
-} from "@mui/material";
+} from '@mui/material';
 
-import { style } from "./modal_style";
-import { ISuccess } from "../types";
-import { useAuth } from "../AuthContext";
-import { VisibilityOff, Visibility } from "@mui/icons-material";
+import { style } from './modal_style';
+import { ISuccess } from '../types';
+import { useAuth } from '../../context/AuthContext';
+import { VisibilityOff, Visibility } from '@mui/icons-material';
 
 export const SignUp = ({ onSuccess }: ISuccess) => {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [warning, setWarning] = useState("");
+  const [warning, setWarning] = useState('');
   const { authFetch } = useAuth();
 
   // 1. Create focus references for the input elements
@@ -38,23 +38,23 @@ export const SignUp = ({ onSuccess }: ISuccess) => {
         password: password,
       });
       const requestOptions = {
-        method: "POST",
+        method: 'POST',
         body: json_string,
       };
 
-      const response = await authFetch("/user/signup", requestOptions);
+      const response = await authFetch('/user/signup', requestOptions);
 
       if (response.status == 409) {
-        setEmail("");
-        setUsername("");
-        setWarning("username and/or email already taken");
+        setEmail('');
+        setUsername('');
+        setWarning('username and/or email already taken');
       } else if (!response.ok) {
-        throw new Error("register user failed");
+        throw new Error('register user failed');
       } else if (response.ok) {
         onSuccess();
       }
     } catch (error) {
-      console.error("Fetch error: ", error);
+      console.error('Fetch error: ', error);
       alert(error);
     }
   };
@@ -62,9 +62,9 @@ export const SignUp = ({ onSuccess }: ISuccess) => {
   // 2. Intercept Enter key to shift focus instead of submitting early
   const handleKeyDown = (
     evt: React.KeyboardEvent<HTMLDivElement>,
-    nextRef: React.RefObject<HTMLInputElement | null>
+    nextRef: React.RefObject<HTMLInputElement | null>,
   ) => {
-    if (evt.key === "Enter") {
+    if (evt.key === 'Enter') {
       evt.preventDefault(); // Stop the form from submitting early
       nextRef.current?.focus(); // Hop cursor to the next field
     }
@@ -76,17 +76,17 @@ export const SignUp = ({ onSuccess }: ISuccess) => {
 
   return (
     <Box sx={style}>
-      <Stack direction="row" sx={{ mb: 3, alignItems: "center" }} spacing={2}>
+      <Stack direction="row" sx={{ mb: 3, alignItems: 'center' }} spacing={2}>
         <Box
           component="img"
           src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/250px-Instagram_logo_2022.svg.png"
           alt="instagram"
-          sx={{ height: 30, width: "auto", display: { xs: "none", sm: "block" } }}
+          sx={{ height: 30, width: 'auto', display: { xs: 'none', sm: 'block' } }}
         />
-        <Typography id="modal-signup-title" variant="h5" sx={{ flexGrow: 1, textAlign: "center" }}>
+        <Typography id="modal-signup-title" variant="h5" sx={{ flexGrow: 1, textAlign: 'center' }}>
           New user
         </Typography>
-        <Box sx={{ width: { xs: 0, sm: "30px" } }} />
+        <Box sx={{ width: { xs: 0, sm: '30px' } }} />
       </Stack>
 
       <form onSubmit={handleSignUp}>
@@ -99,7 +99,7 @@ export const SignUp = ({ onSuccess }: ISuccess) => {
             onChange={(evt) => setUsername(evt.target.value)}
             autoComplete="username" // Helps password managers autofill
             onKeyDown={(e) => handleKeyDown(e, emailRef)} // Focuses email on Enter
-            slotProps={{ htmlInput: { enterKeyHint: "next" } }}
+            slotProps={{ htmlInput: { enterKeyHint: 'next' } }}
           />
           <TextField
             name="email"
@@ -111,18 +111,18 @@ export const SignUp = ({ onSuccess }: ISuccess) => {
             // Pass the inputRef so emailRef points directly to the native input element
             inputRef={emailRef}
             onKeyDown={(e) => handleKeyDown(e, passwordRef)} // Focuses password on Enter
-            slotProps={{ htmlInput: { enterKeyHint: "next" } }}
+            slotProps={{ htmlInput: { enterKeyHint: 'next' } }}
           />
           <TextField
             name="password"
             placeholder="password"
-            type={showPassword ? "text" : "password"}
+            type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(evt) => setPassword(evt.target.value)}
             autoComplete="new-password"
             inputRef={passwordRef}
             slotProps={{
-              htmlInput: { enterKeyHint: "done" },
+              htmlInput: { enterKeyHint: 'done' },
               // 3. Inject the interactive eye icon into the trailing side of the input box
               input: {
                 endAdornment: (
