@@ -12,7 +12,6 @@ import {
   Grid,
   Box,
   CircularProgress,
-  // Skeleton,
 } from '@mui/material';
 
 import { IPost, Uuid } from './types';
@@ -22,6 +21,7 @@ import { useAuth } from '../context/AuthContext';
 import { AdminUserList } from './Admin';
 import { ProfileGrid } from './ProfileGrid';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
+import { SkeletonFeed } from '../hooks/SkeletonFeed';
 
 function App() {
   const { authFetch, authUser, userData, isLoading } = useAuth();
@@ -48,16 +48,27 @@ function App() {
       if (isLoading || loading) return;
 
       const isProfile = view.type === 'profile';
-      // If a forcedOffset number is provided, use it. Otherwise, fallback to array lengths.
-      const currentOffset =
-        forcedOffset !== undefined
-          ? forcedOffset
-          : isProfile
-            ? profilePosts.length
-            : feedPosts.length;
 
-      // Guard check: If offset is 0 but we already have data running, abort duplicate
-      if (currentOffset === 0 && loading) return;
+      // 🛑 FIX: Calculate current offset dynamically without needing length in dependencies
+      let currentOffset = forcedOffset;
+      if (currentOffset === undefined) {
+        if (isProfile) {
+          setProfilePosts((prev) => {
+            currentOffset = prev.length;
+            return prev;
+          });
+        } else {
+          setFeedPosts((prev) => {
+            currentOffset = prev.length;
+            return prev;
+          });
+        }
+      }
+
+      // Fallback if the state setter trick didn't execute immediately
+      const finalOffset = currentOffset ?? 0;
+
+      if (finalOffset === 0 && loading) return;
       setLoading(true);
 
       const endpoint = isProfile
@@ -79,10 +90,10 @@ function App() {
           }));
 
           if (isProfile) {
-            setProfilePosts((prev) => (currentOffset === 0 ? formatted : [...prev, ...formatted]));
+            setProfilePosts((prev) => (finalOffset === 0 ? formatted : [...prev, ...formatted]));
             if (formatted.length < 60) setProfileHasMore(false);
           } else {
-            setFeedPosts((prev) => (currentOffset === 0 ? formatted : [...prev, ...formatted]));
+            setFeedPosts((prev) => (finalOffset === 0 ? formatted : [...prev, ...formatted]));
             if (formatted.length < 20) setFeedHasMore(false);
           }
         }
@@ -92,7 +103,7 @@ function App() {
         setLoading(false);
       }
     },
-    [view, feedPosts.length, profilePosts.length, loading, authFetch, isLoading],
+    [isLoading, view.type, view.username, authFetch],
   );
 
   // Reset pagination flags whenever the target view switches
@@ -109,7 +120,7 @@ function App() {
       setFeedPosts([]);
       fetchMoreData(0);
     }
-  }, [view.type, authUser, isLoading]);
+  }, [view.type, authUser, isLoading, fetchMoreData]);
 
   // Bind the infinite scroll boundary anchor
   const bottomRef = useInfiniteScroll({
@@ -256,14 +267,10 @@ function App() {
 
   // Helper function to render the "Center Piece"
   const renderContent = () => {
-    // ---------------- load auth from cookie guard -----------------
     if (isLoading) {
-      <Grid size={12}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-          <CircularProgress size={24} />
-        </Box>
-      </Grid>;
+      return <SkeletonFeed />;
     }
+
     switch (view.type) {
       case 'admin_users':
         return (
@@ -279,7 +286,7 @@ function App() {
             <ProfileGrid profilePosts={profilePosts} onPostClick={setSelectedProfilePost} />
             {/* Target sentinel element tracking node */}
             <div ref={bottomRef} style={{ height: '10px', width: '100%' }} />
-            {(isLoading || loading) && (
+            {loading && (
               <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
                 <CircularProgress size={24} />
               </Box>
@@ -344,7 +351,7 @@ function App() {
             ))}
             {/* Target sentinel element tracking node */}
             <Grid size={12} ref={bottomRef} style={{ minHeight: '10px' }}>
-              {(isLoading || loading) && (
+              {loading && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
                   <CircularProgress size={24} />
                 </Box>
