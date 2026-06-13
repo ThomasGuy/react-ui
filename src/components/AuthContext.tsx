@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// /* eslint-disable @typescript-eslint/no-explicit-any */
 import { jwtDecode } from 'jwt-decode';
 import React, { useState, useEffect, useRef } from 'react';
-import { IAuthUser, IUserResponse } from './types';
+import { IAuthUser, ILogin, ILoginResponse, IUser } from './types';
 import { AuthContext } from '../context/AuthContext';
 
 interface IJwtClaims {
@@ -11,18 +11,12 @@ interface IJwtClaims {
   is_admin: boolean;
 }
 
-interface AuthResponse {
-  authToken: string;
-  authTokenType: string;
-  user: IUserResponse;
-}
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // All auth states are now strictly in memory
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [authTokenType, setAuthTokenType] = useState<string | null>(null);
-  const [authUsername, setAuthUsername] = useState<string | null>(null);
-  const [user, setUser] = useState<IAuthUser | null>(null);
+  const [authUser, setAuthUser] = useState<IAuthUser | null>(null);
+  const [userData, setUserData] = useState<IUser | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Refs to handle request queueing during concurrent background token refreshes
@@ -41,33 +35,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearAuthSession = () => {
     setAuthToken(null);
     setAuthTokenType(null);
-    setAuthUsername(null);
-    setUser(null);
+    setUserData(null);
+    setAuthUser(null);
   };
 
   // Execute Silent Refresh ON BOOT - Single source of truth check
   useEffect(() => {
-    console.log('🚀 AUTH CONTEXT BOOT EFFECT TRIGGERED');
+    // console.log('🚀 AUTH CONTEXT BOOT EFFECT TRIGGERED');
     const silentRefreshOnBoot = async () => {
       try {
-        console.log('📡 Sending refresh fetch request...');
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/refresh`, {
+        // console.log('📡 Sending refresh fetch request...');
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/refresh`, {
           method: 'POST',
           credentials: 'include', // Essential for cookie transmission
         });
 
-        if (res.ok) {
-          const data: AuthResponse = await res.json();
-          setAuthToken(data.authToken);
-          setAuthTokenType(data.authTokenType);
-          setAuthUsername(data.user.username);
-
-          const decoded = jwtDecode<IJwtClaims>(data.authToken);
-          setUser({
-            id: decoded.sub,
-            isAdmin: decoded.is_admin,
-            type: decoded.token_type,
-          });
+        if (response.ok) {
+          const newLoginData = (await response.json()) as ILoginResponse;
+          login(newLoginData);
         } else {
           clearAuthSession(); // Graceful public fallback
         }
@@ -82,16 +67,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     silentRefreshOnBoot();
   }, []);
 
-  const login = (data: any) => {
+  const login = (newLoginData: ILoginResponse) => {
+    const data: ILogin = {
+      ...newLoginData,
+      user: {
+        ...newLoginData.user,
+        emailVerifiedAt: newLoginData.user.emailVerifiedAt
+          ? new Date(newLoginData.user.emailVerifiedAt)
+          : null,
+        lastLoginAt: newLoginData.user.lastLoginAt ? new Date(newLoginData.user.lastLoginAt) : null,
+        createdAt: new Date(newLoginData.user.createdAt),
+        updatedAt: new Date(newLoginData.user.updatedAt),
+      },
+    };
     setAuthToken(data.authToken);
     setAuthTokenType(data.authTokenType);
-    setAuthUsername(data.user.username);
+    setUserData(data.user);
 
     const decoded = jwtDecode<IJwtClaims>(data.authToken);
-    setUser({
+    setAuthUser({
       id: decoded.sub,
       isAdmin: decoded.is_admin,
-      type: decoded.token_type,
+      type: decoded.token_type, // 'access' or 'refresh'
     });
   };
 
@@ -141,13 +138,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
 
           if (refreshResponse.ok) {
-            const data: AuthResponse = await refreshResponse.json();
-
-            // Sync fresh memory states
-            setAuthToken(data.authToken);
-            setAuthUsername(data.user.username);
+            const data: ILoginResponse = await refreshResponse.json();
+            login(data);
             isRefreshingRef.current = false;
-
             onTokenRefreshed(data.authToken, data.authTokenType);
 
             // Retry original request
@@ -179,7 +172,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider
-      value={{ authToken, authUsername, login, logout, authFetch, isLoading, user }}
+      value={{ authToken, userData, login, logout, authFetch, isLoading, authUser }}
     >
       {children}
     </AuthContext.Provider>

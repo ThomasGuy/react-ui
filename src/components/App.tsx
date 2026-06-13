@@ -12,7 +12,7 @@ import {
   Grid,
   Box,
   CircularProgress,
-  Skeleton,
+  // Skeleton,
 } from '@mui/material';
 
 import { IPost, Uuid } from './types';
@@ -24,7 +24,7 @@ import { ProfileGrid } from './ProfileGrid';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 
 function App() {
-  const { authFetch, user, authUsername, isLoading } = useAuth();
+  const { authFetch, authUser, userData, isLoading } = useAuth();
   const [feedPosts, setFeedPosts] = useState<IPost[]>([]);
   const [profilePosts, setProfilePosts] = useState<IPost[]>([]);
   const [loading, setLoading] = useState(false);
@@ -44,7 +44,7 @@ function App() {
   // --- PAGINATION LOADER ENGINE ---
   const fetchMoreData = useCallback(
     async (forcedOffset?: number) => {
-      console.log('fetchmore data is called ...');
+      // console.log('fetchmore data is called ...');
       if (isLoading || loading) return;
 
       const isProfile = view.type === 'profile';
@@ -109,7 +109,7 @@ function App() {
       setFeedPosts([]);
       fetchMoreData(0);
     }
-  }, [view.type, user, isLoading]);
+  }, [view.type, authUser, isLoading]);
 
   // Bind the infinite scroll boundary anchor
   const bottomRef = useInfiniteScroll({
@@ -118,10 +118,6 @@ function App() {
     hasMore: view.type === 'profile' ? profileHasMore : feedHasMore,
     postsLength: view.type === 'profile' ? profilePosts.length : feedPosts.length,
   });
-
-  // ---------------- load auth from cookie guard -----------------
-
-  if (isLoading) <Skeleton />;
 
   // ------------------- Handle Comment CLick ------------------------
 
@@ -157,7 +153,7 @@ function App() {
   //  ------------------- Handle Like Click --------------------------
 
   const handleLikeClick = async (targetPostId: Uuid) => {
-    if (!user) {
+    if (!authUser) {
       alert('Login to like posts!');
       return;
     }
@@ -203,7 +199,7 @@ function App() {
   //  --------------- Delete Post Block -------------------
 
   const handleDeleteClick = (id: Uuid, username: string) => {
-    if (user && authUsername == username) {
+    if (authUser && userData?.username == username) {
       setSelectedPostId(id);
       setOpenDialog(true);
     } else {
@@ -259,12 +255,19 @@ function App() {
   }
 
   // Helper function to render the "Center Piece"
-
   const renderContent = () => {
+    // ---------------- load auth from cookie guard -----------------
+    if (isLoading) {
+      <Grid size={12}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+          <CircularProgress size={24} />
+        </Box>
+      </Grid>;
+    }
     switch (view.type) {
       case 'admin_users':
         return (
-          <Grid size={12}>{user?.isAdmin ? <AdminUserList /> : <div>Access Denied</div>}</Grid>
+          <Grid size={12}>{authUser?.isAdmin ? <AdminUserList /> : <div>Access Denied</div>}</Grid>
         );
 
       case 'profile': {
@@ -276,7 +279,7 @@ function App() {
             <ProfileGrid profilePosts={profilePosts} onPostClick={setSelectedProfilePost} />
             {/* Target sentinel element tracking node */}
             <div ref={bottomRef} style={{ height: '10px', width: '100%' }} />
-            {loading && (
+            {(isLoading || loading) && (
               <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
                 <CircularProgress size={24} />
               </Box>
@@ -341,9 +344,9 @@ function App() {
             ))}
             {/* Target sentinel element tracking node */}
             <Grid size={12} ref={bottomRef} style={{ minHeight: '10px' }}>
-              {loading && (
+              {(isLoading || loading) && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-                  <CircularProgress size={30} />
+                  <CircularProgress size={24} />
                 </Box>
               )}
             </Grid>

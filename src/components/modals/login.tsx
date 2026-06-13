@@ -9,7 +9,7 @@ import {
   Typography,
 } from '@mui/material';
 
-import { ISuccess } from '../types';
+import { ILoginResponse, ISuccess } from '../types';
 import { style } from './modal_style';
 import { useAuth } from '../../context/AuthContext';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
@@ -56,8 +56,8 @@ export const Login = ({ onSuccess }: ISuccess) => {
         setPassword('');
         setWarning('Incorrect username and/or password');
       } else if (response.ok) {
-        const data = await response.json();
-        login(data);
+        const newLoginData = (await response.json()) as ILoginResponse;
+        login(newLoginData);
         onSuccess();
       }
     } catch (error) {

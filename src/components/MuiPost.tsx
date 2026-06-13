@@ -29,7 +29,7 @@ import { getInstagramTallUrl } from '@/utils/sanityImage';
 const Post = (props: PostProps) => {
   const { post, setView, onDeleteRequest, onLikeRequest, onCommentRequest } = props;
   const [newComment, setNewComment] = useState<string | ''>('');
-  const { authUsername } = useAuth();
+  const { userData } = useAuth();
 
   const absoluteImageUrl = getInstagramTallUrl(post.sanityAssetId);
 
@@ -56,7 +56,7 @@ const Post = (props: PostProps) => {
           </Avatar>
         }
         action={
-          authUsername == post.user.username && (
+          userData?.username == post.user.username && (
             <IconButton
               aria-label="delete"
               onClick={() => onDeleteRequest(post.id, post.user.username)}

@@ -22,7 +22,7 @@ const Head = (props: HeadProps) => {
   const [newPostOpen, setNewPostOpen] = useState(false);
 
   // Grab everything we need from Context
-  const { logout, isLoading, user, authUsername } = useAuth();
+  const { logout, isLoading, authUser, userData } = useAuth();
 
   if (isLoading) {
     return <Skeleton />;
@@ -33,12 +33,14 @@ const Head = (props: HeadProps) => {
     window.scrollTo(0, 0);
   };
 
-  const titleName = `${authUsername}`.charAt(0).toUpperCase() + `${authUsername}`.slice(1);
+  const titleName =
+    `${userData?.username}`.charAt(0).toUpperCase() + `${userData?.username}`.slice(1);
+  const viewName = `${view.username}`.charAt(0).toUpperCase() + `${view.username}`.slice(1);
   const title =
-    user && view.type === 'feed'
+    authUser && view.type === 'feed'
       ? `${titleName}`
-      : user && view.type === 'profile'
-        ? `${view.username}'s profile`
+      : authUser && view.type === 'profile'
+        ? `${viewName}'s profile`
         : 'Mui_app';
 
   return (
@@ -99,7 +101,7 @@ const Head = (props: HeadProps) => {
                     <Skeleton variant="rounded" />
                     <Skeleton variant="rounded" className="skeleton-margin" />
                   </>
-                ) : user ? (
+                ) : authUser ? (
                   <>
                     {view.type === 'profile' && (
                       <Button variant="contained" color="primary" onClick={() => backHandler()}>
@@ -108,7 +110,7 @@ const Head = (props: HeadProps) => {
                     )}
 
                     {/* Admin Button */}
-                    {user.isAdmin && view.type !== 'admin_users' && (
+                    {authUser.isAdmin && view.type !== 'admin_users' && (
                       <Button
                         variant="contained"
                         color="secondary"

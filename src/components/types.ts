@@ -56,6 +56,18 @@ export interface IPost {
   viewCount?: number;
 }
 
+export interface IPostResponse {
+  id: Uuid;
+  userId: Uuid;
+  caption: string | null;
+  username: string;
+  sanityAssetId: string;
+  viewCount: number;
+  createdAt: string;
+  updatedAt: string;
+  comments: IComment[];
+}
+
 export interface INewPost {
   setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;
   onSuccess: () => void;
@@ -76,14 +88,46 @@ export interface IUserResponse {
   createdAt: Date;
 }
 
-export interface IPostResponse {
+// ------------------- Login --------------------
+
+export interface ILoginUser {
   id: Uuid;
-  userId: Uuid;
-  caption: string | null;
+  email: string;
   username: string;
-  sanityAssetId: string;
-  viewCount: number;
+  displayName: string | null;
+  bio: string | null;
+  avatarUrl: string | null;
+  isActive: boolean;
+  isAdmin: boolean;
+  emailVerifiedAt: string | null;
+  lastLoginAt: string | null;
   createdAt: string;
   updatedAt: string;
-  comments: IComment[];
+}
+
+export interface IUser {
+  id: Uuid;
+  email: string;
+  username: string;
+  displayName: string | null;
+  bio: string | null;
+  avatarUrl: string | null;
+  isActive: boolean;
+  isAdmin: boolean;
+  emailVerifiedAt: Date | null;
+  lastLoginAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ILoginResponse {
+  authToken: string;
+  authTokenType: string;
+  user: ILoginUser;
+}
+
+export interface ILogin {
+  authToken: string;
+  authTokenType: string;
+  user: IUser;
 }

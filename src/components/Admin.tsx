@@ -9,7 +9,7 @@ import { IUserResponse } from './types'; // Your interface from earlier
 export const AdminUserList = () => {
   const [rows, setRows] = useState<IUserResponse[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const { authFetch, user: currentUser } = useAuth();
+  const { authFetch, authUser: currentUser } = useAuth();
 
   const loadData = async () => {
     try {
