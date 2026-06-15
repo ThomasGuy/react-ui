@@ -19,3 +19,5 @@ deploy.sh
 
 # TypeScript build cache
 *.tsbuildinfo
+vite.config.d.ts
+vite.config.js

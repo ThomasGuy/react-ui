@@ -3,7 +3,6 @@ import { Box, Button, Input, Stack, TextField, Typography } from '@mui/material'
 
 import { INewPost, IPost, IPostResponse } from '../types';
 import { style } from './modal_style';
-import { sanityConfig } from '../../utils/sanityImage';
 import { useAuth } from '../../context/AuthContext';
 
 export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
@@ -26,32 +25,24 @@ export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
     setLoading(true);
 
     try {
-      // --- PART 1: Direct Binary Upload to Sanity ---
-      const { projectId, dataset } = sanityConfig; // Pulled dynamically from utility import
-      const writeToken = import.meta.env.VITE_SANITY_WRITE_TOKEN;
-      const sanityUploadUrl = `https://${projectId}.api.sanity.io/v2026-05-15/assets/images/${dataset}`;
-
       if (imageFile) {
-        const sanityResponse = await fetch(sanityUploadUrl, {
+        const formdata = new FormData();
+        formdata.append('image', imageFile);
+
+        const uploadResponse = await authFetch('/post/iamge', {
           method: 'POST',
-          headers: {
-            Authorization: `Bearer ${writeToken}`,
-            'Content-Type': imageFile.type, // Guaranteed to be defined here
-          },
-          body: imageFile, // Securely passed as a binary stream
+          body: formdata,
         });
 
-        if (!sanityResponse.ok) throw new Error('Sanity upload handshake failed.');
-
-        const sanityAssetData = await sanityResponse.json();
-        const sanityAssetId: string = sanityAssetData.document._id;
+        if (!uploadResponse.ok) throw new Error('Image asset clearance failed.');
+        const { sanityAssetId } = await uploadResponse.json();
 
         // --- PART 3: Send Payload to Rust Backend ---
         const backendResponse = await authFetch('/post/create', {
           method: 'POST',
           body: JSON.stringify({
-            sanityAssetId,
             caption,
+            sanityAssetId,
           }),
         });
 
