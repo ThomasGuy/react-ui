@@ -15,7 +15,7 @@ stats.html
 .env
 .env.production
 deploy.sh
-.vscode
+.vscode/*
 
 # TypeScript build cache
 *.tsbuildinfo
