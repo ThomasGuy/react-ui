@@ -12,12 +12,16 @@ export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
   const [error, setError] = useState('');
 
   const { authFetch } = useAuth();
+  const MAX_FILE_SIZE = 7 * 1024 * 1024; // Exactly 7MB in bytes
 
   const handleFileData = (evt: React.ChangeEvent<HTMLInputElement>): void => {
     const imgData = evt.target.files ? evt.target.files[0] : null;
-    if (imgData) {
-      setImageFile(imgData);
+    if (imgData && imgData.size > MAX_FILE_SIZE) {
+      setError('Choose a file less than 7MB.');
+      evt.target.value = '';
+      return;
     }
+    setImageFile(imgData);
   };
 
   const handleCreatePost = async (evt?: React.SyntheticEvent) => {
@@ -27,12 +31,16 @@ export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
     try {
       if (imageFile) {
         const formdata = new FormData();
-        formdata.append('image', imageFile);
+        formdata.append('file', imageFile);
 
-        const uploadResponse = await authFetch('/post/iamge', {
+        const uploadResponse = await authFetch('/post/image', {
           method: 'POST',
           body: formdata,
         });
+
+        if (uploadResponse.status === 413) {
+          throw new Error('The server rejected the file because it exceeds the 7MB limit.');
+        }
 
         if (!uploadResponse.ok) throw new Error('Image asset clearance failed.');
         const { sanityAssetId } = await uploadResponse.json();
