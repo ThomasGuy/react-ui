@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Button, Input, Stack, TextField, Typography } from '@mui/material';
 
-import { INewPost, IPost, IPostResponse } from '../types';
+import { INewPost, IPost, IPostResponse } from '../../utils/types';
 import { style } from './modal_style';
 import { useAuth } from '../../context/AuthContext';
 

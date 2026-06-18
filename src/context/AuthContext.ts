@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import { IAuthUser, ILoginResponse, IUser } from '../components/types';
+import { IAuthUser, ILoginResponse, IUser } from '../utils/types';
 
 interface AuthContextType {
   authToken: string | null;

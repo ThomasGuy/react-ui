@@ -10,7 +10,7 @@ import {
   Grid,
   Stack,
 } from '@mui/material';
-import { HeadProps } from './types';
+import { HeadProps } from '../utils/types';
 import { useState } from 'react';
 import { Login, SignUp, NewPost } from './modals';
 import { useAuth } from '../context/AuthContext';

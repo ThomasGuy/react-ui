@@ -4,7 +4,7 @@ import { DataGrid, GridColDef, GridActionsCellItem } from '@mui/x-data-grid';
 import { Box, Paper, Typography, Alert } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useAuth } from '../context/AuthContext'; // Assuming your AuthContext export
-import { IUserResponse } from './types'; // Your interface from earlier
+import { IUserResponse } from '../utils/types'; // Your interface from earlier
 
 export const AdminUserList = () => {
   const [rows, setRows] = useState<IUserResponse[]>([]);

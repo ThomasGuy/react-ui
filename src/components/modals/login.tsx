@@ -9,7 +9,7 @@ import {
   Typography,
 } from '@mui/material';
 
-import { ILoginResponse, ISuccess } from '../types';
+import { ILoginResponse, ISuccess } from '../../utils/types';
 import { style } from './modal_style';
 import { useAuth } from '../../context/AuthContext';
 import { VisibilityOff, Visibility } from '@mui/icons-material';

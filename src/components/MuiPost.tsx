@@ -22,7 +22,7 @@ import {
   Send,
 } from '@mui/icons-material';
 
-import { PostProps } from './types';
+import { PostProps } from '../utils/types';
 import { useAuth } from '../context/AuthContext';
 import { getInstagramTallUrl } from '@/utils/sanityImage';
 

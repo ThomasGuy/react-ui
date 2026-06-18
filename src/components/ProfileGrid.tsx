@@ -1,6 +1,6 @@
 // import React from "react";
 import { Box, Typography } from '@mui/material';
-import { IPost } from './types';
+import { IPost } from '../utils/types';
 import { getInstagramTallUrl } from '../utils/sanityImage';
 
 interface ProfileGridProps {

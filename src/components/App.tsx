@@ -14,7 +14,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 
-import { IPost, Uuid } from './types';
+import { IPost, Uuid } from '../utils/types';
 import Post from './MuiPost';
 import Head from './MuiHead';
 import { useAuth } from '../context/AuthContext';

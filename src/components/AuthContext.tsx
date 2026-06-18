@@ -1,7 +1,7 @@
 // /* eslint-disable @typescript-eslint/no-explicit-any */
 import { jwtDecode } from 'jwt-decode';
 import React, { useState, useEffect, useRef } from 'react';
-import { IAuthUser, ILogin, ILoginResponse, IUser } from './types';
+import { IAuthUser, ILogin, ILoginResponse, IUser } from '../utils/types';
 import { AuthContext } from '../context/AuthContext';
 
 interface IJwtClaims {
