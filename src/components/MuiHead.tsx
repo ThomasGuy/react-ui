@@ -1,14 +1,14 @@
 import {
   AppBar,
-  Toolbar,
-  Typography,
-  Container,
+  Box,
   Button,
+  Container,
+  Grid,
   Modal,
   Skeleton,
-  Box,
-  Grid,
   Stack,
+  Toolbar,
+  Typography,
 } from '@mui/material';
 import { HeadProps } from '../utils/types';
 import { useState } from 'react';
@@ -22,7 +22,7 @@ const Head = (props: HeadProps) => {
   const [newPostOpen, setNewPostOpen] = useState(false);
 
   // Grab everything we need from Context
-  const { logout, isLoading, authUser, userData } = useAuth();
+  const { logout, isLoading, currentUser, userData } = useAuth();
 
   if (isLoading) {
     return <Skeleton />;
@@ -37,11 +37,11 @@ const Head = (props: HeadProps) => {
     `${userData?.username}`.charAt(0).toUpperCase() + `${userData?.username}`.slice(1);
   const viewName = `${view.username}`.charAt(0).toUpperCase() + `${view.username}`.slice(1);
   const title =
-    authUser && view.type === 'feed'
+    currentUser && view.type === 'feed'
       ? `${titleName}`
-      : authUser && view.type === 'profile'
+      : currentUser && view.type === 'profile'
         ? `${viewName}'s profile`
-        : 'Mui_app';
+        : 'Instaclone';
 
   return (
     <AppBar position="sticky" color="inherit" {...appBarProps}>
@@ -101,7 +101,7 @@ const Head = (props: HeadProps) => {
                     <Skeleton variant="rounded" />
                     <Skeleton variant="rounded" className="skeleton-margin" />
                   </>
-                ) : authUser ? (
+                ) : currentUser ? (
                   <>
                     {view.type === 'profile' && (
                       <Button variant="contained" color="primary" onClick={() => backHandler()}>
@@ -110,7 +110,7 @@ const Head = (props: HeadProps) => {
                     )}
 
                     {/* Admin Button */}
-                    {authUser.isAdmin && view.type !== 'admin_users' && (
+                    {currentUser.isAdmin && view.type !== 'admin_users' && (
                       <Button
                         variant="contained"
                         color="secondary"

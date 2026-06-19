@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Button, Input, Stack, TextField, Typography } from '@mui/material';
 
 import { INewPost, IPost, IPostResponse } from '../../utils/types';
@@ -7,12 +7,26 @@ import { useAuth } from '../../context/AuthContext';
 
 export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [caption, setCaption] = useState<string | null>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [hotspot, setHotspot] = useState({ x: 0.5, y: 0.5, height: 1, width: 1 });
 
   const { authFetch } = useAuth();
   const MAX_FILE_SIZE = 7 * 1024 * 1024; // Exactly 7MB in bytes
+
+  // 🌟 Auto-generate or cleanup object blob URLs to prevent client memory leaks
+  useEffect(() => {
+    if (!imageFile) {
+      setPreviewUrl(null);
+      return;
+    }
+    const objectUrl = URL.createObjectURL(imageFile);
+    setPreviewUrl(objectUrl);
+
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [imageFile]);
 
   const handleFileData = (evt: React.ChangeEvent<HTMLInputElement>): void => {
     const imgData = evt.target.files ? evt.target.files[0] : null;
@@ -22,6 +36,18 @@ export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
       return;
     }
     setImageFile(imgData);
+    setHotspot({ x: 0.5, y: 0.5, height: 1, width: 1 });
+  };
+
+  // 🌟 Handles the coordinate target intersection arithmetic on image tap/click
+  const handleImageClick = (e: React.MouseEvent<HTMLImageElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+
+    // Convert click location into precision floating percentages (0.0 to 1.0)
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+
+    setHotspot({ x, y, height: 1, width: 1 });
   };
 
   const handleCreatePost = async (evt?: React.SyntheticEvent) => {
@@ -41,21 +67,34 @@ export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
         if (uploadResponse.status === 413) {
           throw new Error('The server rejected the file because it exceeds the 7MB limit.');
         }
-
         if (!uploadResponse.ok) throw new Error('Image asset clearance failed.');
+
+        // Destructure the incoming ID string
         const { sanityAssetId } = await uploadResponse.json();
 
-        // --- PART 3: Send Payload to Rust Backend ---
-        const backendResponse = await authFetch('/post/create', {
+        // --- PART 3: Send Post Payload to Rust Backend ---
+        const createPostResponse = await authFetch('/post/create', {
           method: 'POST',
           body: JSON.stringify({
             caption,
-            sanityAssetId,
+            sanityImage: {
+              asset: {
+                _ref: sanityAssetId,
+                _type: 'reference',
+              },
+              hotspot: {
+                x: hotspot.x,
+                y: hotspot.y,
+                height: hotspot.height,
+                width: hotspot.width,
+              },
+              crop: null,
+            },
           }),
         });
 
-        if (backendResponse.ok) {
-          const newPostData = (await backendResponse.json()) as IPostResponse;
+        if (createPostResponse.ok) {
+          const newPostData = (await createPostResponse.json()) as IPostResponse;
           const formattedPost: IPost = {
             ...newPostData,
             caption: newPostData.caption ?? '',
@@ -71,6 +110,7 @@ export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
 
           setImageFile(null);
           setCaption('');
+          setHotspot({ x: 0.5, y: 0.5, height: 1, width: 1 });
           window.scrollTo(0, 0);
           onSuccess();
         }
@@ -128,6 +168,58 @@ export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
             onKeyDown={onKeyDownListener}
           />
         </Box>
+
+        {/* 🌟 INTERACTIVE HOTSPOT PREVIEW CONTAINER */}
+        {previewUrl && (
+          <Box sx={{ textAlign: 'center', my: 1 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+              Click on the image to set the crop focus point:
+            </Typography>
+            <Box
+              sx={{
+                position: 'relative',
+                display: 'inline-block',
+                cursor: 'crosshair',
+                borderRadius: 2,
+                overflow: 'hidden',
+                boxShadow: 2,
+                maxWidth: '100%',
+                maxHeight: '300px',
+              }}
+            >
+              <Box
+                component="img"
+                src={previewUrl}
+                onClick={handleImageClick}
+                alt="Upload focal preview"
+                sx={{
+                  display: 'block',
+                  maxWidth: '100%',
+                  maxHeight: '300px',
+                  width: 'auto',
+                  height: 'auto',
+                }}
+              />
+              {/* Floating Reticle Targeting ring marker representing the active hotspot */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  left: `${hotspot.x * 100}%`,
+                  top: `${hotspot.y * 100}%`,
+                  width: 20,
+                  height: 20,
+                  border: '2px solid #fff',
+                  borderRadius: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  boxShadow: '0 0 6px rgba(0,0,0,0.8)',
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  pointerEvents: 'none', // Lets clicks fall straight through onto the image element below
+                  transition: 'left 0.15s ease-out, top 0.15s ease-out', // Smooth reticle glides
+                }}
+              />
+            </Box>
+          </Box>
+        )}
 
         <Button
           variant="text"

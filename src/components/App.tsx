@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, cloneElement, ReactElement, useCallback } from 'react';
 import {
+  Box,
+  Button,
+  CircularProgress,
   Container,
   Dialog,
-  DialogTitle,
+  DialogActions,
   DialogContent,
   DialogContentText,
-  DialogActions,
-  Button,
-  useScrollTrigger,
+  DialogTitle,
   Grid,
-  Box,
-  CircularProgress,
+  useScrollTrigger,
 } from '@mui/material';
 
 import { IPost, Uuid } from '../utils/types';
@@ -24,7 +24,7 @@ import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import { SkeletonFeed } from '../hooks/SkeletonFeed';
 
 function App() {
-  const { authFetch, authUser, userData, isLoading } = useAuth();
+  const { authFetch, currentUser, userData, isLoading } = useAuth();
   const [feedPosts, setFeedPosts] = useState<IPost[]>([]);
   const [profilePosts, setProfilePosts] = useState<IPost[]>([]);
   const [loading, setLoading] = useState(false);
@@ -120,7 +120,7 @@ function App() {
       setFeedPosts([]);
       fetchMoreData(0);
     }
-  }, [view.type, authUser, isLoading, fetchMoreData]);
+  }, [view.type, currentUser, isLoading, fetchMoreData]);
 
   // Bind the infinite scroll boundary anchor
   const bottomRef = useInfiniteScroll({
@@ -164,7 +164,7 @@ function App() {
   //  ------------------- Handle Like Click --------------------------
 
   const handleLikeClick = async (targetPostId: Uuid) => {
-    if (!authUser) {
+    if (!currentUser) {
       alert('Login to like posts!');
       return;
     }
@@ -210,7 +210,7 @@ function App() {
   //  --------------- Delete Post Block -------------------
 
   const handleDeleteClick = (id: Uuid, username: string) => {
-    if (authUser && userData?.username == username) {
+    if (currentUser && userData?.username == username) {
       setSelectedPostId(id);
       setOpenDialog(true);
     } else {
@@ -274,7 +274,9 @@ function App() {
     switch (view.type) {
       case 'admin_users':
         return (
-          <Grid size={12}>{authUser?.isAdmin ? <AdminUserList /> : <div>Access Denied</div>}</Grid>
+          <Grid size={12}>
+            {currentUser?.isAdmin ? <AdminUserList /> : <div>Access Denied</div>}
+          </Grid>
         );
 
       case 'profile': {

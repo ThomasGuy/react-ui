@@ -15,7 +15,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // All auth states are now strictly in memory
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [authTokenType, setAuthTokenType] = useState<string | null>(null);
-  const [authUser, setAuthUser] = useState<IAuthUser | null>(null);
+  const [currentUser, setCurrentUser] = useState<IAuthUser | null>(null);
   const [userData, setUserData] = useState<IUser | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -36,7 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAuthToken(null);
     setAuthTokenType(null);
     setUserData(null);
-    setAuthUser(null);
+    setCurrentUser(null);
   };
 
   // Execute Silent Refresh ON BOOT - Single source of truth check
@@ -85,7 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUserData(data.user);
 
     const decoded = jwtDecode<IJwtClaims>(data.authToken);
-    setAuthUser({
+    setCurrentUser({
       id: decoded.sub,
       isAdmin: decoded.is_admin,
       type: decoded.token_type, // 'access' or 'refresh'
@@ -106,7 +106,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // -------------- AuthFetch --------------------------
-
   const authFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
     options.credentials = 'include';
     const isFormData = options.body instanceof FormData;
@@ -172,7 +171,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider
-      value={{ authToken, userData, login, logout, authFetch, isLoading, authUser }}
+      value={{ authToken, userData, login, logout, authFetch, isLoading, currentUser }}
     >
       {children}
     </AuthContext.Provider>

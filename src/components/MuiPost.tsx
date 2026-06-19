@@ -1,18 +1,18 @@
 // import React from "react";
 import { useState } from 'react';
 import {
+  Avatar,
+  Box,
+  Button,
   Card,
+  CardActions,
+  CardContent,
   CardHeader,
   CardMedia,
-  CardContent,
-  CardActions,
-  Avatar,
   IconButton,
-  Typography,
-  Box,
-  TextField,
-  Button,
   Stack,
+  TextField,
+  Typography,
 } from '@mui/material';
 import {
   Favorite as FavoriteIcon,
@@ -24,14 +24,14 @@ import {
 
 import { PostProps } from '../utils/types';
 import { useAuth } from '../context/AuthContext';
-import { getInstagramTallUrl } from '@/utils/sanityImage';
+import { getInstacloneTallUrl } from '@/utils/sanityImage';
 
 const Post = (props: PostProps) => {
   const { post, setView, onDeleteRequest, onLikeRequest, onCommentRequest } = props;
   const [newComment, setNewComment] = useState<string | ''>('');
   const { userData } = useAuth();
 
-  const absoluteImageUrl = getInstagramTallUrl(post.sanityAssetId);
+  const absoluteImageUrl = getInstacloneTallUrl(post.sanityImage);
 
   const profileHnadler = (evt: React.MouseEvent<HTMLDivElement | HTMLSpanElement, MouseEvent>) => {
     evt.preventDefault();

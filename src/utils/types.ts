@@ -47,7 +47,7 @@ export interface IPost {
   id: Uuid;
   userId: Uuid;
   caption: string | null;
-  sanityAssetId: string;
+  sanityImage: ISanityImage;
   timestamp: Date;
   user: { username: string };
   comments: IComment[];
@@ -61,7 +61,7 @@ export interface IPostResponse {
   userId: Uuid;
   caption: string | null;
   username: string;
-  sanityAssetId: string;
+  sanityImage: ISanityImage;
   viewCount: number;
   createdAt: string;
   updatedAt: string;
@@ -130,4 +130,25 @@ export interface ILogin {
   authToken: string;
   authTokenType: string;
   user: IUser;
+}
+
+//----------------------- Sanity -------------------------
+
+export interface ISanityImage {
+  asset: {
+    _ref: string;
+    _type: 'reference';
+  };
+  hotspot?: {
+    x: number; // Centers of attention (0 to 1)
+    y: number;
+    height: number;
+    width: number;
+  };
+  crop?: {
+    top: number; // Crop offsets (0 to 1)
+    bottom: number;
+    left: number;
+    right: number;
+  };
 }

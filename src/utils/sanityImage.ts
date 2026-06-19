@@ -1,13 +1,14 @@
 import { createImageUrlBuilder } from '@sanity/image-url';
+import { ISanityImage } from './types';
 
 // Mock or import your existing configuration metadata
-export const sanityConfig = {
+const sanityConfig = {
   projectId: import.meta.env.VITE_SANITY_PROJECT_ID,
-  dataset: import.meta.env.VITE_SANITY_DATASET || 'production',
+  dataset: import.meta.env.VITE_SANITY_DATASET || 'development',
 };
 
 // Create the single global engine instance
-export const builder = createImageUrlBuilder(sanityConfig);
+const builder = createImageUrlBuilder(sanityConfig);
 
 /**
  * Generates an optimized, strict 3:4 portrait delivery link
@@ -15,25 +16,22 @@ export const builder = createImageUrlBuilder(sanityConfig);
  *
  * @param source - The image object reference from your post payload (e.g., post.image_ref)
  */
-export const getInstagramTallUrl = (source: string) => {
-  return (
-    builder
-      .image(source)
-      .width(1080)
-      .height(1440)
-      .fit('crop')
-      // Respects the custom focal point bubble set by your user inside the studio
-      .crop('focalpoint')
-      .auto('format')
-      .url()
-  );
+export const getInstacloneTallUrl = (imageSource: ISanityImage): string => {
+  return builder
+    .image(imageSource)
+    .width(900)
+    .height(1200)
+    .fit('crop')
+    .crop('focalpoint')
+    .auto('format')
+    .url();
 };
 
-export const getInstagramGridThumbnailUrl = (source: string) => {
+export const getInstacloneGridThumbnailUrl = (imageSource: ISanityImage): string => {
   return builder
-    .image(source)
-    .width(400) // Downscaled footprint: 400px width is perfect resolution for a 3-column matrix split
-    .height(533) // Hard mathematical 3:4 target calculation aspect boundary (400 / 0.75)
+    .image(imageSource)
+    .width(300) // Downscaled footprint: 333px width is perfect resolution for a 4-column matrix split
+    .height(400) // Hard mathematical 3:4 target calculation aspect boundary (400 / 0.75)
     .fit('crop')
     .crop('focalpoint')
     .auto('format')

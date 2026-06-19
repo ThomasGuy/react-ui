@@ -1,7 +1,7 @@
 // import React from "react";
 import { Box, Typography } from '@mui/material';
 import { IPost } from '../utils/types';
-import { getInstagramTallUrl } from '../utils/sanityImage';
+import { getInstacloneGridThumbnailUrl } from '../utils/sanityImage';
 
 interface ProfileGridProps {
   profilePosts: IPost[];
@@ -33,7 +33,7 @@ export const ProfileGrid = ({ profilePosts, onPostClick }: ProfileGridProps) => 
     >
       {profilePosts.map((post) => {
         // Compute the absolute 3:4 optimization CDN url locally for each grid box item
-        const gridImageUrl = getInstagramTallUrl(post.sanityAssetId);
+        const gridImageUrl = getInstacloneGridThumbnailUrl(post.sanityImage);
 
         return (
           <Box

@@ -8,7 +8,7 @@ interface AuthContextType {
   logout: () => void;
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;
   isLoading: boolean;
-  authUser: IAuthUser | null;
+  currentUser: IAuthUser | null;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
