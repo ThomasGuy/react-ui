@@ -10,8 +10,8 @@ import {
 } from '@mui/material';
 
 import { style } from './modal_style';
-import { ISuccess } from '../../utils/types';
-import { useAuth } from '../../context/AuthContext';
+import { ISuccess } from '@/utils/types';
+import { useAuth } from '@/context/AuthContext';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
 
 export const SignUp = ({ onSuccess }: ISuccess) => {

@@ -33,7 +33,7 @@ const Post = (props: PostProps) => {
 
   const absoluteImageUrl = getInstacloneTallUrl(post.sanityImage);
 
-  const profileHnadler = (evt: React.MouseEvent<HTMLDivElement | HTMLSpanElement, MouseEvent>) => {
+  const profileHandler = (evt: React.MouseEvent<HTMLDivElement | HTMLSpanElement, MouseEvent>) => {
     evt.preventDefault();
     setView({ type: 'profile', username: post.user.username });
     window.scrollTo(0, 0);
@@ -45,7 +45,7 @@ const Post = (props: PostProps) => {
       <CardHeader
         avatar={
           <Avatar
-            onClick={(e) => profileHnadler(e)}
+            onClick={(e) => profileHandler(e)}
             sx={{
               bgcolor: 'primary.main',
               cursor: 'pointer',
@@ -69,7 +69,7 @@ const Post = (props: PostProps) => {
         title={
           <Typography
             variant="subtitle2"
-            onClick={(e) => profileHnadler(e)}
+            onClick={(e) => profileHandler(e)}
             sx={{
               fontWeight: 'bold',
               cursor: 'pointer',

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button, Input, Stack, TextField, Typography } from '@mui/material';
 
-import { INewPost, IPost, IPostResponse } from '../../utils/types';
+import { INewPost, IPost, IPostResponse } from '@/utils/types';
 import { style } from './modal_style';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 
 export const NewPost = ({ setPosts, onSuccess }: INewPost) => {
   const [imageFile, setImageFile] = useState<File | null>(null);

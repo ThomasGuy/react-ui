@@ -9,9 +9,9 @@ import {
   Typography,
 } from '@mui/material';
 
-import { ILoginResponse, ISuccess } from '../../utils/types';
+import { ILoginResponse, ISuccess } from '@/utils/types';
 import { style } from './modal_style';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
 
 export const Login = ({ onSuccess }: ISuccess) => {

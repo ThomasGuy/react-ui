@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect, cloneElement, ReactElement, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -11,7 +11,6 @@ import {
   DialogContentText,
   DialogTitle,
   Grid,
-  useScrollTrigger,
 } from '@mui/material';
 
 import { IPost, Uuid } from '../utils/types';
@@ -22,6 +21,7 @@ import { AdminUserList } from './Admin';
 import { ProfileGrid } from './ProfileGrid';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import { SkeletonFeed } from '../hooks/SkeletonFeed';
+import { ElevationScroll } from '@/hooks/elevationScroll';
 
 function App() {
   const { authFetch, currentUser, userData, isLoading } = useAuth();
@@ -103,6 +103,7 @@ function App() {
         setLoading(false);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [isLoading, view.type, view.username, authFetch],
   );
 
@@ -240,30 +241,6 @@ function App() {
     setOpenDialog(false);
     setSelectedPostId(null);
   };
-
-  interface Props {
-    children: ReactElement<any>;
-  }
-
-  function ElevationScroll(props: Props) {
-    const { children } = props;
-
-    // trigger will be true when scroll > 0
-    const trigger = useScrollTrigger({
-      disableHysteresis: true, // Appears immediately on scroll
-      threshold: 0, // Scroll distance before triggering
-    });
-
-    return cloneElement(children, {
-      elevation: trigger ? 4 : 0, // Adds shadow (elevation 4) when scrolled
-      sx: {
-        ...children.props.sx,
-        backgroundColor: trigger ? 'rgba(114, 99, 99, 0.6)' : 'transparent', // Slightly translucent
-        backdropFilter: trigger ? 'blur(8px)' : 'none', // Modern blur effect
-        transition: 'all 0.3s ease-in-out',
-      },
-    });
-  }
 
   // Helper function to render the "Center Piece"
   const renderContent = () => {

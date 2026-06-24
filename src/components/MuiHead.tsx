@@ -1,9 +1,9 @@
 import {
   AppBar,
   Box,
-  Button,
   Container,
   Grid,
+  IconButton,
   Modal,
   Skeleton,
   Stack,
@@ -13,6 +13,14 @@ import {
 import { HeadProps } from '../utils/types';
 import { useState } from 'react';
 import { Login, SignUp, NewPost } from './modals';
+import {
+  ArrowBack,
+  Login as LoginIcon,
+  Logout,
+  PostAdd,
+  Settings,
+  Subscriptions,
+} from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 
 const Head = (props: HeadProps) => {
@@ -39,7 +47,7 @@ const Head = (props: HeadProps) => {
   const title =
     currentUser && view.type === 'feed'
       ? `${titleName}`
-      : currentUser && view.type === 'profile'
+      : view.type === 'profile'
         ? `${viewName}'s profile`
         : 'Instaclone';
 
@@ -89,7 +97,20 @@ const Head = (props: HeadProps) => {
               </Typography>
             </Grid>
 
-            <Grid sx={{ width: { xs: '100%', sm: 'auto' } }}>
+            <Grid
+              sx={{
+                width: { xs: '100%', sm: 'auto' },
+                '& .MuiIconButton-root:not(.MuiIconButton-colorSecondary)': {
+                  color: '#ccc',
+                },
+                '& .MuiIconButton-root .MuiSvgIcon-root': {
+                  fontSize: '2rem',
+                },
+                '& .MuiIconButton-root': {
+                  mx: { xs: 1, sm: 2 },
+                },
+              }}
+            >
               <Stack
                 direction="row"
                 spacing={2}
@@ -103,55 +124,47 @@ const Head = (props: HeadProps) => {
                   </>
                 ) : currentUser ? (
                   <>
-                    {view.type === 'profile' && (
-                      <Button variant="contained" color="primary" onClick={() => backHandler()}>
-                        Back
-                      </Button>
+                    {['profile', 'admin_users'].includes(view.type) && (
+                      <IconButton onClick={() => backHandler()}>
+                        <ArrowBack />
+                      </IconButton>
                     )}
 
                     {/* Admin Button */}
                     {currentUser.isAdmin && view.type !== 'admin_users' && (
-                      <Button
-                        variant="contained"
+                      <IconButton
                         color="secondary"
                         onClick={() => setView({ type: 'admin_users' })}
                       >
-                        Admin
-                      </Button>
+                        <Settings />
+                      </IconButton>
                     )}
 
-                    {view.type === 'admin_users' && (
-                      <Button variant="contained" color="primary" onClick={() => backHandler()}>
-                        Back
-                      </Button>
+                    {view.type === 'feed' && (
+                      <IconButton onClick={() => setNewPostOpen(true)}>
+                        <PostAdd />
+                      </IconButton>
                     )}
 
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => setNewPostOpen(true)}
-                    >
-                      New Post
-                    </Button>
-
-                    <Button variant="contained" color="primary" onClick={logout}>
-                      Log Out
-                    </Button>
+                    <IconButton onClick={logout}>
+                      <Logout />
+                    </IconButton>
                   </>
                 ) : (
                   <>
                     {view.type === 'profile' && (
-                      <Button variant="contained" color="primary" onClick={() => backHandler()}>
-                        Back
-                      </Button>
+                      <IconButton onClick={() => backHandler()}>
+                        <ArrowBack />
+                      </IconButton>
                     )}
 
-                    <Button variant="contained" color="primary" onClick={() => setLoginOpen(true)}>
-                      LOGIN
-                    </Button>
-                    <Button variant="contained" color="primary" onClick={() => setOpenSignUp(true)}>
-                      SIGNUP
-                    </Button>
+                    <IconButton onClick={() => setLoginOpen(true)}>
+                      <LoginIcon />
+                    </IconButton>
+
+                    <IconButton onClick={() => setOpenSignUp(true)}>
+                      <Subscriptions />
+                    </IconButton>
                   </>
                 )}
               </Stack>
