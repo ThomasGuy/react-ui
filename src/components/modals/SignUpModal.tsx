@@ -9,7 +9,6 @@ import {
   Typography,
 } from '@mui/material';
 
-import { style } from './modal_style';
 import { ISuccess } from '@/utils/types';
 import { useAuth } from '@/context/AuthContext';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
@@ -26,7 +25,7 @@ export const SignUp = ({ onSuccess }: ISuccess) => {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
-  const handleSignUp = async (evt: React.SubmitEvent<HTMLFormElement>) => {
+  const handleSignUp = async (evt: React.FormEvent<HTMLFormElement>) => {
     evt?.preventDefault();
     const cleanUsername = username.trim();
     const cleanEmail = email.trim();
@@ -44,12 +43,12 @@ export const SignUp = ({ onSuccess }: ISuccess) => {
 
       const response = await authFetch('/user/signup', requestOptions);
 
-      if (response.status == 409) {
+      if (response.status === 409) {
         setEmail('');
         setUsername('');
-        setWarning('username and/or email already taken');
+        setWarning('Username and/or email already taken');
       } else if (!response.ok) {
-        throw new Error('register user failed');
+        throw new Error('Register user failed');
       } else if (response.ok) {
         onSuccess();
       }
@@ -65,8 +64,8 @@ export const SignUp = ({ onSuccess }: ISuccess) => {
     nextRef: React.RefObject<HTMLInputElement | null>,
   ) => {
     if (evt.key === 'Enter') {
-      evt.preventDefault(); // Stop the form from submitting early
-      nextRef.current?.focus(); // Hop cursor to the next field
+      evt.preventDefault();
+      nextRef.current?.focus();
     }
   };
 
@@ -75,47 +74,58 @@ export const SignUp = ({ onSuccess }: ISuccess) => {
   };
 
   return (
-    <Box sx={style}>
-      <Stack direction="row" sx={{ mb: 3, alignItems: 'center' }} spacing={2}>
+    // 🚀 Cleaned container box for fluid responsive padding within Dialog panels
+    <Box sx={{ p: { xs: 1, sm: 2 } }}>
+      <Stack
+        direction="row"
+        sx={{ mb: 4, alignItems: 'center', justifyContent: 'center' }}
+        spacing={1.5}
+      >
         <Box
           component="img"
           src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/250px-Instagram_logo_2022.svg.png"
           alt="instagram"
-          sx={{ height: 30, width: 'auto', display: { xs: 'none', sm: 'block' } }}
+          sx={{ height: 32, width: 'auto' }}
         />
-        <Typography id="modal-signup-title" variant="h5" sx={{ flexGrow: 1, textAlign: 'center' }}>
-          New user
+        <Typography
+          variant="h5"
+          sx={{ fontWeight: '800', trackingSpacing: '-0.5px', color: 'text.primary' }}
+        >
+          Sign Up
         </Typography>
-        <Box sx={{ width: { xs: 0, sm: '30px' } }} />
       </Stack>
 
       <form onSubmit={handleSignUp}>
-        <Stack spacing={2} sx={{ mt: 2 }}>
+        <Stack spacing={2.5}>
           <TextField
             name="username"
-            placeholder="username"
-            type="text"
+            label="Username"
+            variant="outlined"
+            fullWidth
             value={username}
             onChange={(evt) => setUsername(evt.target.value)}
-            autoComplete="username" // Helps password managers autofill
-            onKeyDown={(e) => handleKeyDown(e, emailRef)} // Focuses email on Enter
+            autoComplete="username"
+            onKeyDown={(e) => handleKeyDown(e, emailRef)}
             slotProps={{ htmlInput: { enterKeyHint: 'next' } }}
           />
           <TextField
             name="email"
-            placeholder="email"
+            label="Email Address"
+            variant="outlined"
+            fullWidth
             type="email"
             value={email}
             onChange={(evt) => setEmail(evt.target.value)}
             autoComplete="email"
-            // Pass the inputRef so emailRef points directly to the native input element
             inputRef={emailRef}
-            onKeyDown={(e) => handleKeyDown(e, passwordRef)} // Focuses password on Enter
+            onKeyDown={(e) => handleKeyDown(e, passwordRef)}
             slotProps={{ htmlInput: { enterKeyHint: 'next' } }}
           />
           <TextField
             name="password"
-            placeholder="password"
+            label="Password"
+            variant="outlined"
+            fullWidth
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(evt) => setPassword(evt.target.value)}
@@ -123,32 +133,53 @@ export const SignUp = ({ onSuccess }: ISuccess) => {
             inputRef={passwordRef}
             slotProps={{
               htmlInput: { enterKeyHint: 'done' },
-              // 3. Inject the interactive eye icon into the trailing side of the input box
               input: {
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
                       aria-label="toggle password visibility"
                       onClick={togglePasswordVisibility}
-                      onMouseDown={(e) => e.preventDefault()} // Prevents field from losing focus on click
+                      onMouseDown={(e) => e.preventDefault()}
                       edge="end"
+                      size="small"
                     >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                      {showPassword ? (
+                        <VisibilityOff fontSize="small" />
+                      ) : (
+                        <Visibility fontSize="small" />
+                      )}
                     </IconButton>
                   </InputAdornment>
                 ),
               },
             }}
           />
+
           <Button
-            variant="text"
+            variant="contained"
             color="primary"
             type="submit"
+            fullWidth
             disabled={!password || !username || !email}
+            sx={{
+              py: 1.2,
+              fontWeight: 'bold',
+              boxShadow: 'none',
+              '&:hover': { boxShadow: 'none' },
+            }}
           >
-            SUBMIT
+            Create Account
           </Button>
-          {warning && <Typography color="error">{warning}</Typography>}
+
+          {warning && (
+            <Typography
+              variant="body2"
+              color="error"
+              sx={{ textAlign: 'center', fontWeight: '500', mt: 1 }}
+            >
+              {warning}
+            </Typography>
+          )}
         </Stack>
       </form>
     </Box>

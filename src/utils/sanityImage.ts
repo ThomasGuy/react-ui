@@ -37,3 +37,23 @@ export const getInstacloneGridThumbnailUrl = (imageSource: ISanityImage): string
     .auto('format')
     .url();
 };
+/**
+ * Generates an optimized, square profile avatar link.
+ *
+ * @param assetRef - The raw asset ID string (e.g. user.avatarUrl)
+ */
+export const getInstacloneAvatarUrl = (assetRef: string | null | undefined): string | undefined => {
+  if (!assetRef) return undefined;
+
+  // If it's already an absolute fallback URL, bypass the builder
+  if (assetRef.startsWith('http')) return assetRef;
+
+  return builder
+    .image(assetRef) // ✅ The builder accepts raw asset ID strings directly!
+    .width(160) // 160px width is perfect resolution for a retina-display 80px avatar
+    .height(160) // Force a 1:1 perfect square aspect ratio
+    .fit('crop') // Crop around the focus point
+    .crop('entropy')
+    .auto('format') // Serve modern formats like WebP dynamically
+    .url();
+};

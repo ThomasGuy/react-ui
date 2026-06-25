@@ -4,6 +4,7 @@ import { IAuthUser, ILoginResponse, IUser } from '../utils/types';
 interface AuthContextType {
   authToken: string | null;
   userData: IUser | null;
+  setUserData: React.Dispatch<React.SetStateAction<IUser | null>>;
   login: (data: ILoginResponse) => void;
   logout: () => void;
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;

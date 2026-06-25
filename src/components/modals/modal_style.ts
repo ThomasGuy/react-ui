@@ -1,16 +1,20 @@
-export const style = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: { xs: '350px', sm: '400px' },
-  minWidth: '330px',
+import { SxProps, Theme } from '@mui/material';
 
-  bgcolor: 'var(--mui-palette-background-paper)',
-  borderColor: 'divider',
-  border: '2px solid',
+export const style: SxProps<Theme> = {
+  // 🚀 Let Dialog handle positioning. We only style the internal Paper container here:
+  '& .MuiDialog-paper': {
+    width: { xs: '100%', sm: '400px' },
+    maxWidth: { xs: '350px', sm: '400px' },
+    minWidth: '320px',
 
-  boxShadow: 24,
-  p: 4,
-  color: 'text.primary',
+    // Modern MUI v9 theme variables
+    bgcolor: 'background.paper',
+    borderColor: 'divider',
+    border: '1px solid',
+    borderRadius: 3, // Gives it a clean modern look (~12px)
+
+    boxShadow: 'var(--mui-shadows-24)',
+    color: 'text.primary',
+    p: 1, // Base spacing padding inside container bounds
+  },
 };

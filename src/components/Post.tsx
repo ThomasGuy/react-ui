@@ -46,7 +46,12 @@ const Post = (props: PostProps) => {
         avatar={
           <Avatar
             onClick={(e) => profileHandler(e)}
+            // src={getInstacloneAvatarUrl(userData?.avatarUrl || undefined)}
             sx={{
+              width: 36,
+              height: 36,
+              fontSize: '0.95rem',
+              fontWeight: 'bold',
               bgcolor: 'primary.main',
               cursor: 'pointer',
               '&:hover': { color: 'paleturquoise' },
@@ -142,7 +147,7 @@ const Post = (props: PostProps) => {
           maxHeight: '6rem',
           overflowY: 'auto',
           '&::-webkit-scrollbar': { width: '4px' },
-          '&::-webkit-scrollbar-thumb': { backgroundColor: '#ccc', borderRadius: '4px' },
+          '&::-webkit-scrollbar-thumb': { bgcolor: 'info', borderRadius: '4px' },
         }}
       >
         {post.comments.map((c) => (

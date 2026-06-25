@@ -1,5 +1,15 @@
 import React from 'react';
 import { AppBarProps } from '@mui/material';
+import { Dispatch, SetStateAction } from 'react';
+
+// 🚀 Extract the union object shape
+type ViewState = {
+  type: 'feed' | 'profile' | 'admin_users';
+  username?: string;
+};
+
+// 🚀 Create the exact callable signature for the state setter function
+export type ISetViewFn = Dispatch<SetStateAction<ViewState>>;
 
 export type Uuid = `${string}-${string}-${string}-${string}-${string}`;
 
@@ -15,22 +25,12 @@ export interface HeadProps extends AppBarProps {
     type: 'feed' | 'profile' | 'admin_users';
     username?: string;
   };
-  setView: React.Dispatch<
-    React.SetStateAction<{
-      type: 'feed' | 'profile' | 'admin_users';
-      username?: string;
-    }>
-  >;
+  setView: ISetViewFn;
 }
 
 export interface PostProps {
   post: IPost;
-  setView: React.Dispatch<
-    React.SetStateAction<{
-      type: 'feed' | 'profile' | 'admin_users';
-      username?: string;
-    }>
-  >;
+  setView: ISetViewFn;
   onDeleteRequest: (id: Uuid, username: string) => void;
   onLikeRequest: (id: Uuid) => void;
   onCommentRequest: (e: React.SubmitEvent<HTMLFormElement>, id: Uuid, comment: string) => void;
@@ -151,4 +151,11 @@ export interface ISanityImage {
     left: number;
     right: number;
   };
+}
+
+// ---------------- User Update Profile -----------
+export interface IUpdateProfilePayload {
+  displayName?: string | null;
+  bio?: string | null;
+  avatarUrl?: string | null;
 }

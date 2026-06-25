@@ -10,7 +10,6 @@ import {
 } from '@mui/material';
 
 import { ILoginResponse, ISuccess } from '@/utils/types';
-import { style } from './modal_style';
 import { useAuth } from '@/context/AuthContext';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
 
@@ -28,8 +27,8 @@ export const Login = ({ onSuccess }: ISuccess) => {
     nextRef: React.RefObject<HTMLInputElement | null>,
   ) => {
     if (evt.key === 'Enter') {
-      evt.preventDefault(); // Stop the form from submitting early
-      nextRef.current?.focus(); // Hop cursor to the next field
+      evt.preventDefault();
+      nextRef.current?.focus();
     }
   };
 
@@ -37,13 +36,13 @@ export const Login = ({ onSuccess }: ISuccess) => {
     setShowPassword((prev) => !prev);
   };
 
-  const handleLogin = async (e: React.SubmitEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e?.preventDefault();
     try {
       const cleanUsername = username.trim();
       const loginData = {
-        username: cleanUsername as string,
-        password: password as string,
+        username: cleanUsername,
+        password: password,
       };
       const requestOptions = {
         method: 'POST',
@@ -51,7 +50,7 @@ export const Login = ({ onSuccess }: ISuccess) => {
       };
       const response = await authFetch(`/user/login`, requestOptions);
 
-      if (response.status == 401) {
+      if (response.status === 401) {
         setLoginName('');
         setPassword('');
         setWarning('Incorrect username and/or password');
@@ -66,34 +65,46 @@ export const Login = ({ onSuccess }: ISuccess) => {
   };
 
   return (
-    <Box sx={style}>
-      <Stack direction="row" sx={{ mb: 3, alignItems: 'center' }} spacing={2}>
+    // 🚀 Container now acts purely as a responsive layout boundaries wrapper inside Dialog panel
+    <Box sx={{ p: { xs: 1, sm: 2 } }}>
+      <Stack
+        direction="row"
+        sx={{ mb: 4, alignItems: 'center', justifyContent: 'center' }}
+        spacing={1.5}
+      >
         <Box
           component="img"
           src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/250px-Instagram_logo_2022.svg.png"
           alt="instagram"
-          sx={{ height: 30, width: 'auto', display: { xs: 'none', sm: 'block' } }}
+          sx={{ height: 32, width: 'auto' }}
         />
-        <Typography id="modal-login-title" variant="h5" sx={{ flexGrow: 1, textAlign: 'center' }}>
+        <Typography
+          variant="h5"
+          sx={{ fontWeight: '800', trackingSpacing: '-0.5px', color: 'text.primary' }}
+        >
           Login
         </Typography>
-        <Box sx={{ width: { xs: 0, sm: '30px' } }} />
       </Stack>
+
       <form onSubmit={handleLogin}>
-        <Stack spacing={2} sx={{ mt: 2 }}>
+        <Stack spacing={2.5}>
           <TextField
             name="username"
-            placeholder="username"
-            type="text"
+            label="Username"
+            variant="outlined"
+            fullWidth
             value={username}
             onChange={(evt) => setLoginName(evt.target.value)}
             autoComplete="username"
             onKeyDown={(e) => handleKeyDown(e, passwordRef)}
             slotProps={{ htmlInput: { enterKeyHint: 'next' } }}
           />
+
           <TextField
             name="password"
-            placeholder="password"
+            label="Password"
+            variant="outlined"
+            fullWidth
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(evt) => setPassword(evt.target.value)}
@@ -109,18 +120,45 @@ export const Login = ({ onSuccess }: ISuccess) => {
                       onClick={togglePasswordVisibility}
                       onMouseDown={(e) => e.preventDefault()}
                       edge="end"
+                      size="small"
                     >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                      {showPassword ? (
+                        <VisibilityOff fontSize="small" />
+                      ) : (
+                        <Visibility fontSize="small" />
+                      )}
                     </IconButton>
                   </InputAdornment>
                 ),
               },
             }}
           />
-          <Button variant="text" color="primary" type="submit" disabled={!password || !username}>
-            SUBMIT
+
+          <Button
+            variant="contained"
+            color="primary"
+            type="submit"
+            fullWidth
+            disabled={!password || !username}
+            sx={{
+              py: 1.2,
+              fontWeight: 'bold',
+              boxShadow: 'none',
+              '&:hover': { boxShadow: 'none' },
+            }}
+          >
+            Log In
           </Button>
-          {warning && <Typography color="error">{warning}</Typography>}
+
+          {warning && (
+            <Typography
+              variant="body2"
+              color="error"
+              sx={{ textAlign: 'center', fontWeight: '500', mt: 1 }}
+            >
+              {warning}
+            </Typography>
+          )}
         </Stack>
       </form>
     </Box>

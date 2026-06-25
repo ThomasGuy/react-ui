@@ -14,8 +14,8 @@ import {
 } from '@mui/material';
 
 import { IPost, Uuid } from '../utils/types';
-import Post from './MuiPost';
-import Head from './MuiHead';
+import Post from './Post';
+import Head from './Head';
 import { useAuth } from '../context/AuthContext';
 import { AdminUserList } from './Admin';
 import { ProfileGrid } from './ProfileGrid';
@@ -44,7 +44,6 @@ function App() {
   // --- PAGINATION LOADER ENGINE ---
   const fetchMoreData = useCallback(
     async (forcedOffset?: number) => {
-      // console.log('fetchmore data is called ...');
       if (isLoading || loading) return;
 
       const isProfile = view.type === 'profile';
