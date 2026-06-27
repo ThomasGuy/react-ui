@@ -12,6 +12,7 @@ import { LoginModal, SignUpModal, NewPostModal } from './modals';
 import { HeadProps } from '../utils/types';
 import { useAuth } from '../context/AuthContext';
 import { UserProfileMenu } from './UserProfileMenu';
+import { capitalize } from '@/utils/helpers';
 
 const Head = (props: HeadProps) => {
   const { setFeedPosts, view, setView, ...appBarProps } = props;
@@ -28,11 +29,6 @@ const Head = (props: HeadProps) => {
   const backHandler = () => {
     setView({ type: 'feed' });
     window.scrollTo(0, 0);
-  };
-
-  const capitalize = (name: string | undefined) => {
-    if (!name) return '';
-    return name.charAt(0).toUpperCase() + name.slice(1);
   };
 
   const title =

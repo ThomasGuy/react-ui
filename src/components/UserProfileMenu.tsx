@@ -60,7 +60,13 @@ export const UserProfileMenu = ({ setView }: IUserProfileMenuProps) => {
       >
         <Avatar
           src={getInstacloneAvatarUrl(userData.avatarUrl || undefined)}
-          sx={{ width: 36, height: 36, fontSize: '0.95rem', fontWeight: 'bold' }}
+          sx={{
+            width: 48,
+            height: 48,
+            fontSize: '1.15rem',
+            fontWeight: 'bold',
+            alignContent: 'center',
+          }}
         >
           {!userData.avatarUrl && initial}
         </Avatar>

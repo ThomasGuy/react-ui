@@ -81,7 +81,6 @@ function App() {
           const formatted: IPost[] = data.map((post: IPostResponse) => ({
             ...post,
             timestamp: new Date(post.createdAt),
-            // user: { username: post.user.username, avatarUrl: post.user.avatarUrl },
             comments: post.comments || [],
             likesCount: post.likesCount || 0,
             hasLiked: post.hasLiked || false,

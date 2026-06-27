@@ -25,6 +25,7 @@ import {
 import { PostProps } from '../utils/types';
 import { useAuth } from '../context/AuthContext';
 import { getInstacloneAvatarUrl, getInstacloneTallUrl } from '@/utils/sanityImage';
+import { capitalize } from '@/utils/helpers';
 
 const Post = (props: PostProps) => {
   const { post, setView, onDeleteRequest, onLikeRequest, onCommentRequest } = props;
@@ -48,16 +49,16 @@ const Post = (props: PostProps) => {
             onClick={(e) => profileHandler(e)}
             src={getInstacloneAvatarUrl(post.user.avatarUrl || undefined)}
             sx={{
-              width: 36,
-              height: 36,
-              fontSize: '0.95rem',
+              width: 42,
+              height: 42,
+              fontSize: '1rem',
               fontWeight: 'bold',
               bgcolor: 'primary.main',
               cursor: 'pointer',
               '&:hover': { color: 'paleturquoise' },
             }}
           >
-            {post.user.username.charAt(0).toUpperCase()}
+            {post.user.username[0].toUpperCase()}
           </Avatar>
         }
         action={
@@ -81,7 +82,7 @@ const Post = (props: PostProps) => {
               '&:hover': { textDecoration: 'underline' },
             }}
           >
-            {post.user.username}
+            {capitalize(post.user.username)}
           </Typography>
         }
         subheader={post.timestamp.toLocaleDateString(undefined, {
