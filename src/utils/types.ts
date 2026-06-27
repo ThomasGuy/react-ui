@@ -33,6 +33,7 @@ export interface PostProps {
   onCommentRequest: (e: React.SubmitEvent<HTMLFormElement>, id: Uuid, comment: string) => void;
 }
 
+//  -----------------   Posts  --------------------------------
 export interface IComment {
   id: Uuid;
   comment: string;
@@ -67,8 +68,12 @@ export interface IPostResponse {
   viewCount: number;
   createdAt: string;
   updatedAt: string;
-  comments: IComment[];
+  comments?: IComment[];
+  likesCount?: number;
+  hasLiked?: boolean;
 }
+
+//  -----------------------------------------------//
 
 export interface INewPost {
   setPosts: React.Dispatch<React.SetStateAction<IPost[]>>;

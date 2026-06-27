@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback } from 'react';
 import {
   Box,
@@ -13,7 +12,7 @@ import {
   Grid,
 } from '@mui/material';
 
-import { IPost, Uuid } from '../utils/types';
+import { IPost, IPostResponse, Uuid } from '../utils/types';
 import Post from './Post';
 import Head from './Head';
 import { useAuth } from '../context/AuthContext';
@@ -79,10 +78,10 @@ function App() {
         if (res.ok) {
           const data = await res.json();
 
-          const formatted: IPost[] = data.map((post: any) => ({
+          const formatted: IPost[] = data.map((post: IPostResponse) => ({
             ...post,
             timestamp: new Date(post.createdAt),
-            user: { username: post.user.username, avatarUrl: post.user.avatarUrl },
+            // user: { username: post.user.username, avatarUrl: post.user.avatarUrl },
             comments: post.comments || [],
             likesCount: post.likesCount || 0,
             hasLiked: post.hasLiked || false,

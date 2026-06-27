@@ -110,7 +110,7 @@ export const NewPostModal = ({ open, onClose, setPosts }: INewPostModalProps) =>
           ...newPostData,
           caption: newPostData.caption ?? '',
           timestamp: new Date(newPostData.createdAt),
-          user: { username: newPostData.username },
+          // user: { username: newPostData.user.username, avatarUrl: newPostData.user.avatarUrl },
           comments: [],
           likesCount: 0,
           hasLiked: false,
