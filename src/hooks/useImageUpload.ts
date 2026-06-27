@@ -22,6 +22,8 @@ export const useImageUpload = () => {
       const formData = new FormData();
       formData.append('file', file);
 
+      await authFetch('/health');
+
       const response = await authFetch('/post/image', {
         method: 'POST',
         body: formData,

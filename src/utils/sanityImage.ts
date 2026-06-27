@@ -18,11 +18,10 @@ const builder = createImageUrlBuilder(sanityConfig);
  */
 export const getInstacloneTallUrl = (imageSource: ISanityImage): string => {
   return builder
-    .image(imageSource)
+    .image(imageSource) // ✅ The builder accepts raw asset ID strings directly!
     .width(900)
     .height(1200)
     .fit('crop')
-    .crop('focalpoint')
     .auto('format')
     .url();
 };
@@ -30,10 +29,9 @@ export const getInstacloneTallUrl = (imageSource: ISanityImage): string => {
 export const getInstacloneGridThumbnailUrl = (imageSource: ISanityImage): string => {
   return builder
     .image(imageSource)
-    .width(300) // Downscaled footprint: 333px width is perfect resolution for a 4-column matrix split
+    .width(300)
     .height(400) // Hard mathematical 3:4 target calculation aspect boundary (400 / 0.75)
     .fit('crop')
-    .crop('focalpoint')
     .auto('format')
     .url();
 };

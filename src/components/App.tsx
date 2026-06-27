@@ -24,7 +24,7 @@ import { SkeletonFeed } from '../hooks/SkeletonFeed';
 import { ElevationScroll } from '@/hooks/elevationScroll';
 
 function App() {
-  const { authFetch, currentUser, userData, isLoading } = useAuth();
+  const { authFetch, currentUser, userData, isInitializing } = useAuth();
   const [feedPosts, setFeedPosts] = useState<IPost[]>([]);
   const [profilePosts, setProfilePosts] = useState<IPost[]>([]);
   const [loading, setLoading] = useState(false);
@@ -44,7 +44,7 @@ function App() {
   // --- PAGINATION LOADER ENGINE ---
   const fetchMoreData = useCallback(
     async (forcedOffset?: number) => {
-      if (isLoading || loading) return;
+      if (isInitializing || loading) return;
 
       const isProfile = view.type === 'profile';
 
@@ -82,7 +82,7 @@ function App() {
           const formatted: IPost[] = data.map((post: any) => ({
             ...post,
             timestamp: new Date(post.createdAt),
-            user: { username: post.user.username },
+            user: { username: post.user.username, avatarUrl: post.user.avatarUrl },
             comments: post.comments || [],
             likesCount: post.likesCount || 0,
             hasLiked: post.hasLiked || false,
@@ -103,12 +103,12 @@ function App() {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isLoading, view.type, view.username, authFetch],
+    [isInitializing, view.type, view.username, authFetch],
   );
 
   // Reset pagination flags whenever the target view switches
   useEffect(() => {
-    if (isLoading) return;
+    if (isInitializing) return;
     // Always unlock the home feed boundaries when resetting layout views
     setFeedHasMore(true);
     setProfileHasMore(true);
@@ -120,7 +120,7 @@ function App() {
       setFeedPosts([]);
       fetchMoreData(0);
     }
-  }, [view.type, currentUser, isLoading, fetchMoreData]);
+  }, [view.type, currentUser, isInitializing, fetchMoreData]);
 
   // Bind the infinite scroll boundary anchor
   const bottomRef = useInfiniteScroll({
@@ -243,7 +243,7 @@ function App() {
 
   // Helper function to render the "Center Piece"
   const renderContent = () => {
-    if (isLoading) {
+    if (isInitializing) {
       return <SkeletonFeed />;
     }
 

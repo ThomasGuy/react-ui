@@ -21,10 +21,7 @@ export interface ISuccess {
 
 export interface HeadProps extends AppBarProps {
   setFeedPosts: ISetPosts;
-  view: {
-    type: 'feed' | 'profile' | 'admin_users';
-    username?: string;
-  };
+  view: ViewState;
   setView: ISetViewFn;
 }
 
@@ -49,18 +46,23 @@ export interface IPost {
   caption: string | null;
   sanityImage: ISanityImage;
   timestamp: Date;
-  user: { username: string };
+  user: UserSummary;
   comments: IComment[];
   likesCount: number;
   hasLiked: boolean;
   viewCount?: number;
 }
 
+export interface UserSummary {
+  username: string;
+  avatarUrl?: string | null; // 🚀 ADDED: Matches your backend JSON key exactly
+}
+
 export interface IPostResponse {
   id: Uuid;
   userId: Uuid;
   caption: string | null;
-  username: string;
+  user: UserSummary;
   sanityImage: ISanityImage;
   viewCount: number;
   createdAt: string;
@@ -134,23 +136,34 @@ export interface ILogin {
 
 //----------------------- Sanity -------------------------
 
+export type Hotspot = {
+  _type: 'sanity.imageHotspot'; // 🚀 Locks into the required Sanity namespace
+  x: number; // Centers of attention (0 to 1)
+  y: number;
+  height: number;
+  width: number;
+};
+
+export type ISetHotspotFn = Dispatch<SetStateAction<Hotspot>>;
+
+export type Crop = {
+  _type: 'sanity.imageCrop'; // 🚀 Locks into the required Sanity namespace
+  top: number; // Crop offsets (0 to 1)
+  bottom: number;
+  left: number;
+  right: number;
+};
+
+export type ISetCropFn = Dispatch<SetStateAction<Crop>>;
+
 export interface ISanityImage {
+  _type: 'image'; // 🚀 Required structural identifier on the parent container
   asset: {
     _ref: string;
     _type: 'reference';
   };
-  hotspot?: {
-    x: number; // Centers of attention (0 to 1)
-    y: number;
-    height: number;
-    width: number;
-  };
-  crop?: {
-    top: number; // Crop offsets (0 to 1)
-    bottom: number;
-    left: number;
-    right: number;
-  };
+  hotspot?: Hotspot;
+  crop?: Crop;
 }
 
 // ---------------- User Update Profile -----------
@@ -158,4 +171,10 @@ export interface IUpdateProfilePayload {
   displayName?: string | null;
   bio?: string | null;
   avatarUrl?: string | null;
+}
+
+// ---------------- ModalProps ---------------
+export interface ModalProps {
+  open: boolean;
+  onClose: () => void;
 }

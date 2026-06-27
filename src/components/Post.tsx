@@ -24,7 +24,7 @@ import {
 
 import { PostProps } from '../utils/types';
 import { useAuth } from '../context/AuthContext';
-import { getInstacloneTallUrl } from '@/utils/sanityImage';
+import { getInstacloneAvatarUrl, getInstacloneTallUrl } from '@/utils/sanityImage';
 
 const Post = (props: PostProps) => {
   const { post, setView, onDeleteRequest, onLikeRequest, onCommentRequest } = props;
@@ -46,7 +46,7 @@ const Post = (props: PostProps) => {
         avatar={
           <Avatar
             onClick={(e) => profileHandler(e)}
-            // src={getInstacloneAvatarUrl(userData?.avatarUrl || undefined)}
+            src={getInstacloneAvatarUrl(post.user.avatarUrl || undefined)}
             sx={{
               width: 36,
               height: 36,
@@ -57,7 +57,7 @@ const Post = (props: PostProps) => {
               '&:hover': { color: 'paleturquoise' },
             }}
           >
-            {post.user.username[0].toUpperCase()}
+            {post.user.username.charAt(0).toUpperCase()}
           </Avatar>
         }
         action={

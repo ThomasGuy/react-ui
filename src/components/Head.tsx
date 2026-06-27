@@ -1,15 +1,5 @@
 import { useState } from 'react';
-import {
-  AppBar,
-  Box,
-  Container,
-  Dialog,
-  DialogContent,
-  IconButton,
-  Skeleton,
-  Toolbar,
-  Typography,
-} from '@mui/material';
+import { AppBar, Box, Container, IconButton, Skeleton, Toolbar, Typography } from '@mui/material';
 import {
   ArrowBack,
   Login as LoginIcon,
@@ -18,11 +8,10 @@ import {
   Subscriptions,
 } from '@mui/icons-material';
 
-import { Login, SignUp, NewPost } from './modals';
+import { LoginModal, SignUpModal, NewPostModal } from './modals';
 import { HeadProps } from '../utils/types';
 import { useAuth } from '../context/AuthContext';
 import { UserProfileMenu } from './UserProfileMenu';
-import { style } from './modals/modal_style';
 
 const Head = (props: HeadProps) => {
   const { setFeedPosts, view, setView, ...appBarProps } = props;
@@ -30,9 +19,9 @@ const Head = (props: HeadProps) => {
   const [signUpOpen, setSignUpOpen] = useState(false);
   const [newPostOpen, setNewPostOpen] = useState(false);
 
-  const { isLoading, currentUser, userData } = useAuth();
+  const { isInitializing, currentUser, userData } = useAuth();
 
-  if (isLoading) {
+  if (isInitializing) {
     return <Skeleton />;
   }
 
@@ -58,46 +47,15 @@ const Head = (props: HeadProps) => {
       <Container maxWidth="lg">
         {/* Keeps header aligned with your Post cards */}
         <Toolbar disableGutters>
-          <Dialog
-            open={loginOpen}
-            onClose={() => setLoginOpen(false)}
-            sx={style} // 🚀 Binds the modern width limits and v9 CSS variables smoothly
-            fullWidth
-            maxWidth="xs"
-          >
-            <DialogContent sx={{ p: 3 }}>
-              <Login onSuccess={() => setLoginOpen(false)} />
-            </DialogContent>
-          </Dialog>
+          <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
 
-          <Dialog
-            open={signUpOpen}
-            onClose={() => setSignUpOpen(false)}
-            sx={style}
-            fullWidth
-            maxWidth="xs"
-          >
-            <DialogContent sx={{ p: 3 }}>
-              <SignUp onSuccess={() => setSignUpOpen(false)} />
-            </DialogContent>
-          </Dialog>
+          <SignUpModal open={signUpOpen} onClose={() => setSignUpOpen(false)} />
 
-          <Dialog
+          <NewPostModal
             open={newPostOpen}
-            onClose={(_, reason) => {
-              if (reason === 'escapeKeyDown' || reason === 'backdropClick') {
-                return;
-              }
-              setNewPostOpen(false);
-            }}
-            sx={style}
-            fullWidth
-            maxWidth="xs"
-          >
-            <DialogContent sx={{ p: 3 }}>
-              <NewPost setPosts={setFeedPosts} onSuccess={() => setNewPostOpen(false)} />
-            </DialogContent>
-          </Dialog>
+            onClose={() => setNewPostOpen(false)}
+            setPosts={setFeedPosts}
+          />
 
           <Box
             sx={{
@@ -148,7 +106,7 @@ const Head = (props: HeadProps) => {
                 gap: { xs: 0.5, sm: 1 },
               }}
             >
-              {isLoading ? (
+              {isInitializing ? (
                 // 1. Show Pulse Skeletons while checking the JWT
                 <>
                   <Skeleton variant="rounded" />

@@ -1,5 +1,5 @@
-import { Login } from './LoginModal';
-import { NewPost } from './NewPostModal';
-import { SignUp } from './SignUpModal';
+import { LoginModal } from './LoginModal';
+import { NewPostModal } from './NewPostModal';
+import { SignUpModal } from './SignUpModal';
 
-export { Login, NewPost, SignUp };
+export { LoginModal, NewPostModal, SignUpModal };

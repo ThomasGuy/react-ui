@@ -2,25 +2,64 @@ import React, { useRef, useState } from 'react';
 import {
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
   IconButton,
   InputAdornment,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
-
-import { ILoginResponse, ISuccess } from '@/utils/types';
-import { useAuth } from '@/context/AuthContext';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
 
-export const Login = ({ onSuccess }: ISuccess) => {
-  const [username, setLoginName] = useState('');
+import { ILoginResponse, ModalProps } from '@/utils/types';
+import { useAuth } from '@/context/AuthContext';
+import { style } from './modal_style';
+
+export const LoginModal = ({ open, onClose }: ModalProps) => {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [warning, setWarning] = useState('');
   const { authFetch, login } = useAuth();
 
   const passwordRef = useRef<HTMLInputElement>(null);
+
+  const handleCancelAndClear = () => {
+    setUsername('');
+    setPassword('');
+    setWarning('');
+    onClose();
+  };
+
+  const handleLogin = async (e: React.SubmitEvent<HTMLFormElement>) => {
+    e?.preventDefault();
+    try {
+      const cleanUsername = username.trim();
+      const loginData = {
+        username: cleanUsername,
+        password: password,
+      };
+      const requestOptions = {
+        method: 'POST',
+        body: JSON.stringify(loginData),
+      };
+      const response = await authFetch(`/user/login`, requestOptions);
+
+      if (response.status === 401) {
+        setUsername('');
+        setPassword('');
+        setWarning('Incorrect username and/or password');
+      } else if (response.ok) {
+        const newLoginData = (await response.json()) as ILoginResponse;
+        login(newLoginData);
+        handleCancelAndClear();
+      }
+    } catch (error) {
+      console.error('Fetch error: ', error);
+    }
+  };
 
   const handleKeyDown = (
     evt: React.KeyboardEvent<HTMLDivElement>,
@@ -36,57 +75,43 @@ export const Login = ({ onSuccess }: ISuccess) => {
     setShowPassword((prev) => !prev);
   };
 
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e?.preventDefault();
-    try {
-      const cleanUsername = username.trim();
-      const loginData = {
-        username: cleanUsername,
-        password: password,
-      };
-      const requestOptions = {
-        method: 'POST',
-        body: JSON.stringify(loginData),
-      };
-      const response = await authFetch(`/user/login`, requestOptions);
-
-      if (response.status === 401) {
-        setLoginName('');
-        setPassword('');
-        setWarning('Incorrect username and/or password');
-      } else if (response.ok) {
-        const newLoginData = (await response.json()) as ILoginResponse;
-        login(newLoginData);
-        onSuccess();
-      }
-    } catch (error) {
-      console.error('Fetch error: ', error);
-    }
-  };
-
   return (
-    // 🚀 Container now acts purely as a responsive layout boundaries wrapper inside Dialog panel
-    <Box sx={{ p: { xs: 1, sm: 2 } }}>
-      <Stack
-        direction="row"
-        sx={{ mb: 4, alignItems: 'center', justifyContent: 'center' }}
-        spacing={1.5}
-      >
-        <Box
-          component="img"
-          src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/250px-Instagram_logo_2022.svg.png"
-          alt="instagram"
-          sx={{ height: 32, width: 'auto' }}
-        />
-        <Typography
-          variant="h5"
-          sx={{ fontWeight: '800', trackingSpacing: '-0.5px', color: 'text.primary' }}
+    <Dialog
+      open={open}
+      onClose={(_, reason) => {
+        if (reason === 'backdropClick') return;
+        handleCancelAndClear();
+      }}
+      sx={style}
+      fullWidth
+      maxWidth="xs"
+      slotProps={{
+        paper: {
+          component: 'form',
+          onSubmit: handleLogin,
+        },
+      }}
+    >
+      <DialogContent sx={{ p: { xs: 1, sm: 2 } }}>
+        <Stack
+          direction="row"
+          sx={{ mb: 4, alignItems: 'center', justifyContent: 'center' }}
+          spacing={1.5}
         >
-          Login
-        </Typography>
-      </Stack>
+          <Box
+            component="img"
+            src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/250px-Instagram_logo_2022.svg.png"
+            alt="instagram"
+            sx={{ height: 32, width: 'auto' }}
+          />
+          <Typography
+            variant="h5"
+            sx={{ fontWeight: '800', trackingSpacing: '-0.5px', color: 'text.primary' }}
+          >
+            Login
+          </Typography>
+        </Stack>
 
-      <form onSubmit={handleLogin}>
         <Stack spacing={2.5}>
           <TextField
             name="username"
@@ -94,10 +119,15 @@ export const Login = ({ onSuccess }: ISuccess) => {
             variant="outlined"
             fullWidth
             value={username}
-            onChange={(evt) => setLoginName(evt.target.value)}
+            onChange={(evt) => setUsername(evt.target.value)}
             autoComplete="username"
-            onKeyDown={(e) => handleKeyDown(e, passwordRef)}
-            slotProps={{ htmlInput: { enterKeyHint: 'next' } }}
+            slotProps={{
+              htmlInput: {
+                enterKeyHint: 'next',
+                onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) =>
+                  handleKeyDown(e, passwordRef),
+              },
+            }}
           />
 
           <TextField
@@ -134,22 +164,6 @@ export const Login = ({ onSuccess }: ISuccess) => {
             }}
           />
 
-          <Button
-            variant="contained"
-            color="primary"
-            type="submit"
-            fullWidth
-            disabled={!password || !username}
-            sx={{
-              py: 1.2,
-              fontWeight: 'bold',
-              boxShadow: 'none',
-              '&:hover': { boxShadow: 'none' },
-            }}
-          >
-            Log In
-          </Button>
-
           {warning && (
             <Typography
               variant="body2"
@@ -160,7 +174,35 @@ export const Login = ({ onSuccess }: ISuccess) => {
             </Typography>
           )}
         </Stack>
-      </form>
-    </Box>
+      </DialogContent>
+
+      {/* 🚀 Sticky Modal Bottom Action Footers */}
+      <DialogActions sx={{ px: { xs: 1, sm: 3 }, pb: 3, gap: 1.5 }}>
+        <Button
+          variant="text"
+          color="inherit"
+          type="button" // ◄ Explictly typed as normal button
+          onClick={handleCancelAndClear}
+          sx={{ width: '50%', py: 1.2, fontWeight: 'bold' }}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          type="submit" // ◄ Automatically fires the slotProps.paper's onSubmit handler
+          disabled={!password || !username}
+          sx={{
+            width: '50%',
+            py: 1.2,
+            fontWeight: 'bold',
+            boxShadow: 'none',
+            '&:hover': { boxShadow: 'none' },
+          }}
+        >
+          Login
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };

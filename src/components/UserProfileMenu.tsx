@@ -49,7 +49,6 @@ export const UserProfileMenu = ({ setView }: IUserProfileMenuProps) => {
   };
 
   return (
-    // 🌟 MUI v9 Fix: Moved display and alignItems into the sx block
     <Box sx={{ display: 'flex', alignItems: 'center' }}>
       <IconButton
         onClick={handleMenuOpen}
@@ -98,7 +97,6 @@ export const UserProfileMenu = ({ setView }: IUserProfileMenuProps) => {
           },
         }}
       >
-        {/* 🌟 MUI v9 Fix: Moved px, py, and gap settings into the sx block */}
         <Box sx={{ px: 2, py: 1.5, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
           <Typography variant="subtitle2" noWrap sx={{ fontWeight: 'bold' }}>
             {userData.displayName || userData.username}

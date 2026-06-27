@@ -17,13 +17,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [authTokenType, setAuthTokenType] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<IAuthUser | null>(null);
   const [userData, setUserData] = useState<IUser | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isInitializing, setIsInitializing] = useState<boolean>(true);
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   // Refs to handle request queueing during concurrent background token refreshes
   const isRefreshingRef = useRef<boolean>(false);
   const refreshSubscribersRef = useRef<((token: string, type: string) => void)[]>([]);
-
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   // Process queued-up requests once token rotation succeeds
   const onTokenRefreshed = (newToken: string, newType: string) => {
@@ -41,7 +40,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Execute Silent Refresh ON BOOT - Single source of truth check
   useEffect(() => {
-    // console.log('🚀 AUTH CONTEXT BOOT EFFECT TRIGGERED');
     const silentRefreshOnBoot = async () => {
       try {
         // console.log('📡 Sending refresh fetch request...');
@@ -60,7 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Silent refresh failed on boot:', err);
         clearAuthSession();
       } finally {
-        setIsLoading(false); // Unconditionally drop UI skeleton
+        setIsInitializing(false); // Unconditionally drop UI skeleton
       }
     };
 
@@ -110,9 +108,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     options.credentials = 'include';
     const isFormData = options.body instanceof FormData;
     const newHeaders = new Headers(options.headers);
+    const endpoint = url.startsWith('/') ? url : '/' + url;
+
+    // Let's create local mutable copies of your tokens so we can update them instantly
+    let activeToken = authToken;
+    let activeType = authTokenType;
+
+    // 🚀 1. THE LOOK-AHEAD PROACTIVE GUARD
+    if (activeToken) {
+      try {
+        const decoded = jwtDecode<IJwtClaims>(activeToken);
+        const currentTimeInSeconds = Math.floor(Date.now() / 1000);
+
+        // Check if the token is valid but has less than 60 seconds left of life
+        if (decoded.exp - currentTimeInSeconds < 60) {
+          if (!isRefreshingRef.current) {
+            isRefreshingRef.current = true;
+
+            try {
+              const refreshResponse = await fetch(`${BASE_URL}/user/refresh`, {
+                method: 'POST',
+                credentials: 'include',
+              });
+
+              if (refreshResponse.ok) {
+                const data: ILoginResponse = await refreshResponse.json();
+                login(data);
+                isRefreshingRef.current = false;
+                onTokenRefreshed(data.authToken, data.authTokenType);
+
+                // 💡 CRITICAL FOR THE ACTIVE SCOPE: Overwrite our local execution variables
+                // with the fresh token strings right now so this fetch request uses them!
+                activeToken = data.authToken;
+                activeType = data.authTokenType;
+              } else {
+                isRefreshingRef.current = false;
+                clearAuthSession();
+              }
+            } catch {
+              isRefreshingRef.current = false;
+              clearAuthSession();
+            }
+          } else {
+            // If another concurrent request already triggered a refresh, wait in line for it
+            await new Promise<void>((resolve) => {
+              refreshSubscribersRef.current.push(() => resolve());
+            });
+          }
+        }
+      } catch (e) {
+        console.error('JWT look-ahead check parsing failed:', e);
+      }
+    }
 
     // Dynamic current token snapshot check
-    if (authToken && authTokenType) {
+    if (activeToken && activeType) {
       newHeaders.set('Authorization', `${authTokenType} ${authToken}`);
     }
 
@@ -122,7 +172,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       newHeaders.set('Content-Type', 'application/json');
     }
 
-    const endpoint = url.startsWith('/') ? url : '/' + url;
     const response = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers: newHeaders });
 
     // Handle 401 Unauthorized (Access Token Expired)
@@ -171,7 +220,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider
-      value={{ authToken, userData, setUserData, login, logout, authFetch, isLoading, currentUser }}
+      value={{
+        authToken,
+        authTokenType,
+        userData,
+        setUserData,
+        login,
+        logout,
+        authFetch,
+        isInitializing,
+        currentUser,
+      }}
     >
       {children}
     </AuthContext.Provider>
