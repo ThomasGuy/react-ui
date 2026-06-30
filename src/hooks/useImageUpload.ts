@@ -22,7 +22,8 @@ export const useImageUpload = () => {
       const formData = new FormData();
       formData.append('file', file);
 
-      await authFetch('/health');
+      // force user_refresh if JWT-token exp < 1 minute
+      await authFetch('/user/check');
 
       const response = await authFetch('/post/image', {
         method: 'POST',

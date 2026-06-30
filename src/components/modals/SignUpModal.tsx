@@ -15,15 +15,15 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
 import { style } from './modal_style';
-import { ModalProps } from '@/utils/types';
+import { ILoginResponse, IModalProps } from '@/utils/types';
 
-export const SignUpModal = ({ open, onClose }: ModalProps) => {
+export const SignUpModal = ({ open, onClose }: IModalProps) => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [warning, setWarning] = useState('');
-  const { authFetch } = useAuth();
+  const { authFetch, login } = useAuth();
 
   // 1. Create focus references for the input elements
   const emailRef = useRef<HTMLInputElement>(null);
@@ -37,6 +37,19 @@ export const SignUpModal = ({ open, onClose }: ModalProps) => {
     onClose();
   };
 
+  const handleLogin = async (requestOptions: RequestInit | undefined) => {
+    try {
+      const response = await authFetch(`/user/login`, requestOptions);
+      if (response.ok) {
+        const newLoginData = (await response.json()) as ILoginResponse;
+        login(newLoginData);
+        handleCancelAndClear();
+      }
+    } catch (error) {
+      console.error('Fetch error: ', error);
+    }
+  };
+
   const handleSignUp = async (evt: React.SubmitEvent<HTMLFormElement>) => {
     evt?.preventDefault();
     const cleanUsername = username.trim();
@@ -46,7 +59,7 @@ export const SignUpModal = ({ open, onClose }: ModalProps) => {
       const json_string = JSON.stringify({
         username: cleanUsername,
         email: cleanEmail,
-        password: password,
+        password,
       });
       const requestOptions = {
         method: 'POST',
@@ -62,7 +75,7 @@ export const SignUpModal = ({ open, onClose }: ModalProps) => {
       } else if (!response.ok) {
         throw new Error('Register user failed');
       } else if (response.ok) {
-        onClose();
+        await handleLogin(requestOptions);
       }
     } catch (error) {
       console.error('Fetch error: ', error);

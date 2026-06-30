@@ -1,13 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
 import { DataGrid, GridColDef, GridActionsCellItem } from '@mui/x-data-grid';
 import { Box, Paper, Typography, Alert } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useAuth } from '../context/AuthContext'; // Assuming your AuthContext export
-import { IUserResponse } from '../utils/types'; // Your interface from earlier
+import { useAuth } from '../context/AuthContext';
+import { IUserResponse, IUser } from '../utils/types';
 
 export const AdminUserList = () => {
-  const [rows, setRows] = useState<IUserResponse[]>([]);
+  const [rows, setRows] = useState<IUser[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { authFetch, currentUser } = useAuth();
 
@@ -15,12 +14,13 @@ export const AdminUserList = () => {
     try {
       const res = await authFetch('/admin/users');
       if (res.ok) {
-        const data = await res.json();
-        // Date conversion on arrival
-        const formatted = data.map((u: any) => ({
+        const data: IUserResponse[] = await res.json();
+        const formatted: IUser[] = data.map((u: IUserResponse) => ({
           ...u,
-          createdAt: new Date(u.createdAt),
+          emailVerifiedAt: u.emailVerifiedAt ? new Date(u.emailVerifiedAt) : null,
           lastLoginAt: u.lastLoginAt ? new Date(u.lastLoginAt) : null,
+          createdAt: new Date(u.createdAt),
+          updatedAt: new Date(u.updatedAt),
         }));
         setRows(formatted);
       } else {

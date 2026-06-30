@@ -13,11 +13,11 @@ import {
 } from '@mui/material';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
 
-import { ILoginResponse, ModalProps } from '@/utils/types';
+import { ILoginResponse, IModalProps } from '@/utils/types';
 import { useAuth } from '@/context/AuthContext';
 import { style } from './modal_style';
 
-export const LoginModal = ({ open, onClose }: ModalProps) => {
+export const LoginModal = ({ open, onClose }: IModalProps) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);

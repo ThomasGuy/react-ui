@@ -11,23 +11,17 @@ import {
 } from '@mui/material';
 import { CloudUpload } from '@mui/icons-material';
 
-import { Crop, Hotspot, IPost, IPostResponse, ISetPosts } from '@/utils/types';
+import { Crop, Hotspot, IPost, IPostResponse, IModalPostProps } from '@/utils/types';
 import { useAuth } from '@/context/AuthContext';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { ImagePreview } from '../preview/preview';
 import { style } from './modal_style';
 
-interface INewPostModalProps {
-  open: boolean;
-  onClose: () => void;
-  setPosts: ISetPosts;
-}
-
-export const NewPostModal = ({ open, onClose, setPosts }: INewPostModalProps) => {
+export const NewPostModal = ({ open, onClose, setPosts }: IModalPostProps) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const imageFileRef = useRef<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(undefined);
-  const [caption, setCaption] = useState<string>(''); // 🚀 Fixed primitive typing baseline
+  const [caption, setCaption] = useState<string>('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const isSubmittingRef = useRef(false);
@@ -248,7 +242,7 @@ export const NewPostModal = ({ open, onClose, setPosts }: INewPostModalProps) =>
       </DialogContent>
 
       {/* FIXED ACTION REGION (MUI v9 Optimized) */}
-      <DialogActions sx={{ px: { xs: 1, sm: 2 }, pb: 2, gap: 1 }}>
+      <DialogActions sx={{ px: { xs: 1, sm: 3 }, pb: 3, gap: 1.5 }}>
         <Button
           variant="text"
           color="inherit"
@@ -265,7 +259,13 @@ export const NewPostModal = ({ open, onClose, setPosts }: INewPostModalProps) =>
           disabled={!imageFile || loading || uploading}
           onClick={handleCreatePost}
           onKeyDown={onKeyDownListener}
-          sx={{ width: '50%', py: 1.2, fontWeight: 'bold' }}
+          sx={{
+            width: '50%',
+            py: 1.2,
+            fontWeight: 'bold',
+            boxShadow: 'none',
+            '&:hover': { boxShadow: 'none' },
+          }}
         >
           {uploading ? 'Uploading...' : loading ? 'Creating...' : 'Share Post'}
         </Button>

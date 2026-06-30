@@ -41,6 +41,11 @@ export interface IComment {
   timestamp: string;
 }
 
+export interface UserSummary {
+  username: string;
+  avatarUrl?: string | null; // 🚀 ADDED: Matches your backend JSON key exactly
+}
+
 export interface IPost {
   id: Uuid;
   userId: Uuid;
@@ -52,11 +57,6 @@ export interface IPost {
   likesCount: number;
   hasLiked: boolean;
   viewCount?: number;
-}
-
-export interface UserSummary {
-  username: string;
-  avatarUrl?: string | null; // 🚀 ADDED: Matches your backend JSON key exactly
 }
 
 export interface IPostResponse {
@@ -86,18 +86,9 @@ export interface IAuthUser {
   type: 'Access' | 'Refresh';
 }
 
-export interface IUserResponse {
-  id: Uuid;
-  email: string;
-  username: string;
-  isAdmin: boolean;
-  lastLoginAt: Date | null;
-  createdAt: Date;
-}
-
 // ------------------- Login --------------------
 
-export interface ILoginUser {
+export interface IUserResponse {
   id: Uuid;
   email: string;
   username: string;
@@ -130,7 +121,7 @@ export interface IUser {
 export interface ILoginResponse {
   authToken: string;
   authTokenType: string;
-  user: ILoginUser;
+  user: IUserResponse;
 }
 
 export interface ILogin {
@@ -178,8 +169,12 @@ export interface IUpdateProfilePayload {
   avatarUrl?: string | null;
 }
 
-// ---------------- ModalProps ---------------
-export interface ModalProps {
+// ---------------- IModalProps ---------------
+export interface IModalProps {
   open: boolean;
   onClose: () => void;
+}
+
+export interface IModalPostProps extends IModalProps {
+  setPosts: ISetPosts;
 }
