@@ -43,7 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const silentRefreshOnBoot = async () => {
       try {
         // console.log('📡 Sending refresh fetch request...');
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/refresh`, {
+        const response = await fetch(`${BASE_URL}/user/refresh`, {
           method: 'POST',
           credentials: 'include', // Essential for cookie transmission
         });

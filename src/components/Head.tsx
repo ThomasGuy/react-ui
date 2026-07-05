@@ -43,7 +43,7 @@ const Head = (props: HeadProps) => {
       <Container maxWidth="lg">
         {/* Keeps header aligned with your Post cards */}
         <Toolbar disableGutters>
-          <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+          <LoginModal open={loginOpen} signUp={setSignUpOpen} onClose={() => setLoginOpen(false)} />
 
           <SignUpModal open={signUpOpen} onClose={() => setSignUpOpen(false)} />
 

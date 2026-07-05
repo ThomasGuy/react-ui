@@ -13,11 +13,11 @@ import {
 } from '@mui/material';
 import { VisibilityOff, Visibility } from '@mui/icons-material';
 
-import { ILoginResponse, IModalProps } from '@/utils/types';
+import { ILoginResponse, IModalLoginProps } from '@/utils/types';
 import { useAuth } from '@/context/AuthContext';
 import { style } from './modal_style';
 
-export const LoginModal = ({ open, onClose }: IModalProps) => {
+export const LoginModal = ({ open, onClose, signUp }: IModalLoginProps) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -59,6 +59,11 @@ export const LoginModal = ({ open, onClose }: IModalProps) => {
     } catch (error) {
       console.error('Fetch error: ', error);
     }
+  };
+
+  const handleSignup = () => {
+    handleCancelAndClear();
+    signUp(true);
   };
 
   const handleKeyDown = (
@@ -177,13 +182,21 @@ export const LoginModal = ({ open, onClose }: IModalProps) => {
       </DialogContent>
 
       {/* 🚀 Sticky Modal Bottom Action Footers */}
-      <DialogActions sx={{ px: { xs: 1, sm: 3 }, pb: 3, gap: 1.5 }}>
+      <DialogActions
+        sx={{
+          px: { xs: 1, sm: 3 },
+          pb: 3,
+          gap: 1.5,
+          display: 'grid',
+          gridTemplateColumns: 'repeat(12, 1fr)',
+        }}
+      >
         <Button
           variant="text"
           color="inherit"
           type="button" // ◄ Explictly typed as normal button
           onClick={handleCancelAndClear}
-          sx={{ width: '50%', py: 1.2, fontWeight: 'bold' }}
+          sx={{ gridColumn: 'span 6', py: 1.2, fontWeight: 'bold' }}
         >
           Cancel
         </Button>
@@ -193,7 +206,7 @@ export const LoginModal = ({ open, onClose }: IModalProps) => {
           type="submit" // ◄ Automatically fires the slotProps.paper's onSubmit handler
           disabled={!password || !username}
           sx={{
-            width: '50%',
+            gridColumn: 'span 6',
             py: 1.2,
             fontWeight: 'bold',
             boxShadow: 'none',
@@ -201,6 +214,14 @@ export const LoginModal = ({ open, onClose }: IModalProps) => {
           }}
         >
           Login
+        </Button>
+        <Button
+          variant="text"
+          type="button"
+          onClick={handleSignup}
+          sx={{ color: 'primary', gridColumn: 'span 12', mt: 1, fontWeight: 500 }}
+        >
+          or signup
         </Button>
       </DialogActions>
     </Dialog>

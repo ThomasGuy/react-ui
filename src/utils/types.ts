@@ -13,7 +13,7 @@ export type ISetViewFn = Dispatch<SetStateAction<ViewState>>;
 
 export type Uuid = `${string}-${string}-${string}-${string}-${string}`;
 
-export type ISetPosts = React.Dispatch<React.SetStateAction<IPost[]>>;
+export type ISetPosts = Dispatch<SetStateAction<IPost[]>>;
 
 export interface ISuccess {
   onSuccess: () => void;
@@ -177,4 +177,8 @@ export interface IModalProps {
 
 export interface IModalPostProps extends IModalProps {
   setPosts: ISetPosts;
+}
+
+export interface IModalLoginProps extends IModalProps {
+  signUp: Dispatch<SetStateAction<boolean>>;
 }

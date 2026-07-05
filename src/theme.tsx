@@ -21,17 +21,18 @@ const theme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#0094f6cc',
+      main: '#0094f6e4',
+      second: '#2ace56cb',
     },
     secondary: {
-      main: '#a127d1e1',
+      main: '#a127d1f0',
     },
     error: {
       main: red.A400,
     },
     info: {
       main: '#ccc',
-      second: '#872c86',
+      second: '#e055dee5',
     },
   },
 });
