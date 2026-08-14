@@ -120,7 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const decoded = jwtDecode<IJwtClaims>(activeToken);
         const currentTimeInSeconds = Math.floor(Date.now() / 1000);
 
-        // Check if the token is valid but has less than 60 seconds left of life
+        // Check if the token is valid but has less than 45 seconds left of life
         if (decoded.exp - currentTimeInSeconds < 45) {
           if (!isRefreshingRef.current) {
             isRefreshingRef.current = true;
